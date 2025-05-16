@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,27 +20,50 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        initNavigation()
     }
 
-    //Решил обойтись без синтетиков, так как они устарели.
-    fun menuToast(view: View) {
-        Toast.makeText(this, "Menu", Toast.LENGTH_SHORT).show()
-    }
+    fun initNavigation() {
 
-    fun favToast(view: View) {
-        Toast.makeText(this, "Favorites", Toast.LENGTH_SHORT).show()
-    }
+        val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        val bottom_view = findViewById<BottomNavigationView>(R.id.bottom_menu)
 
-    fun watLatToast(view: View) {
-        Toast.makeText(this, "Watch Later", Toast.LENGTH_SHORT).show()
-    }
+        topAppBar.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.settings -> {
+                    Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show()
+                    true
+                }
 
-    fun colToast(view: View) {
-        Toast.makeText(this, "Collections", Toast.LENGTH_SHORT).show()
-    }
+                else -> false
+            }
+        }
 
-    fun setToast(view: View) {
-        Toast.makeText(this, "Settings", Toast.LENGTH_SHORT).show()
-    }
+        topAppBar.setNavigationOnClickListener {
+            Toast.makeText(this, "There will be navigation here someday", Toast.LENGTH_SHORT).show()
+        }
 
+        bottom_view.setOnNavigationItemSelectedListener {
+
+            when (it.itemId) {
+                R.id.favorites -> {
+                    Toast.makeText(this, "Favorites", Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                R.id.watch_later -> {
+                    Toast.makeText(this, "Watch later", Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                R.id.collections -> {
+                    Toast.makeText(this, "Collections", Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+    }
 }

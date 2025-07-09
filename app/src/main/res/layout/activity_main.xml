@@ -102,77 +102,88 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <GridLayout
-        android:id="@+id/grid_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <!--    <GridLayout-->
+    <!--        android:id="@+id/grid_layout"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_margin="16dp"-->
+    <!--        android:columnCount="2"-->
+    <!--        android:orientation="horizontal"-->
+    <!--        android:useDefaultMargins="true"-->
+    <!--        app:layout_constraintBottom_toTopOf="@id/bottom_menu"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/text_view"-->
+    <!--        android:layoutAnimation="@anim/layout_anim">-->
+
+    <!--        <androidx.cardview.widget.CardView-->
+    <!--            android:id="@+id/poster_1"-->
+    <!--            android:layout_width="150dp"-->
+    <!--            android:layout_height="200dp"-->
+    <!--            app:cardCornerRadius="15dp">-->
+    <!--            <ImageView-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:src="@drawable/friday"-->
+    <!--                android:scaleType="centerCrop"-->
+    <!--                android:clickable="true"-->
+    <!--                android:stateListAnimator="@animator/states_animator"/>-->
+    <!--        </androidx.cardview.widget.CardView>-->
+
+    <!--        <androidx.cardview.widget.CardView-->
+    <!--            android:id="@+id/poster_2"-->
+    <!--            android:layout_width="150dp"-->
+    <!--            android:layout_height="200dp"-->
+    <!--            app:cardCornerRadius="15dp">-->
+    <!--            <ImageView-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:src="@drawable/rocky"-->
+    <!--                android:scaleType="centerCrop"-->
+    <!--                android:clickable="true"-->
+    <!--                android:stateListAnimator="@animator/states_animator"/>-->
+    <!--        </androidx.cardview.widget.CardView>-->
+
+    <!--        <androidx.cardview.widget.CardView-->
+    <!--            android:id="@+id/poster_3"-->
+    <!--            android:layout_width="150dp"-->
+    <!--            android:layout_height="200dp"-->
+    <!--            app:cardCornerRadius="15dp">-->
+    <!--            <ImageView-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:src="@drawable/goonies"-->
+    <!--                android:scaleType="centerCrop"-->
+    <!--                android:clickable="true"-->
+    <!--                android:stateListAnimator="@animator/states_animator"/>-->
+    <!--        </androidx.cardview.widget.CardView>-->
+
+    <!--        <androidx.cardview.widget.CardView-->
+    <!--            android:id="@+id/poster_4"-->
+    <!--            android:layout_width="150dp"-->
+    <!--            android:layout_height="200dp"-->
+    <!--            app:cardCornerRadius="15dp">-->
+    <!--            <ImageView-->
+    <!--                android:layout_width="match_parent"-->
+    <!--                android:layout_height="match_parent"-->
+    <!--                android:src="@drawable/jaws"-->
+    <!--                android:scaleType="centerCrop"-->
+    <!--                android:clickable="true"-->
+    <!--                android:stateListAnimator="@animator/states_animator"/>-->
+    <!--        </androidx.cardview.widget.CardView>-->
+
+    <!--    </GridLayout>-->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_margin="16dp"
-        android:columnCount="2"
-        android:orientation="horizontal"
-        android:useDefaultMargins="true"
         app:layout_constraintBottom_toTopOf="@id/bottom_menu"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_view"
-        android:layoutAnimation="@anim/layout_anim">
+        app:layout_constraintTop_toBottomOf="@id/text_view" />
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/poster_1"
-            android:layout_width="150dp"
-            android:layout_height="200dp"
-            app:cardCornerRadius="15dp">
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/friday"
-                android:scaleType="centerCrop"
-                android:clickable="true"
-                android:stateListAnimator="@animator/states_animator"/>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/poster_2"
-            android:layout_width="150dp"
-            android:layout_height="200dp"
-            app:cardCornerRadius="15dp">
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/rocky"
-                android:scaleType="centerCrop"
-                android:clickable="true"
-                android:stateListAnimator="@animator/states_animator"/>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/poster_3"
-            android:layout_width="150dp"
-            android:layout_height="200dp"
-            app:cardCornerRadius="15dp">
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/goonies"
-                android:scaleType="centerCrop"
-                android:clickable="true"
-                android:stateListAnimator="@animator/states_animator"/>
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/poster_4"
-            android:layout_width="150dp"
-            android:layout_height="200dp"
-            app:cardCornerRadius="15dp">
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/jaws"
-                android:scaleType="centerCrop"
-                android:clickable="true"
-                android:stateListAnimator="@animator/states_animator"/>
-        </androidx.cardview.widget.CardView>
-
-    </GridLayout>
 
     <TextView
         android:id="@+id/text_view"
@@ -181,7 +192,7 @@
         android:autoLink="web"
         android:linksClickable="true"
         android:text="@string/pexels_com"
-        app:layout_constraintTop_toBottomOf="@id/top"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/top" />
 </androidx.constraintlayout.widget.ConstraintLayout>

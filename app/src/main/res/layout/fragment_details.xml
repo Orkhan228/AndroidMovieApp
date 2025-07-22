@@ -5,8 +5,8 @@
     android:id="@+id/coordinator_lay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".DetailsActivity">
+    android:fitsSystemWindows="false"
+    tools:context=".DetailsFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
@@ -21,7 +21,7 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             app:collapsedTitleTextColor="@color/white"
-            app:contentScrim="#9DA7FF"
+            app:contentScrim="@color/colorPrimary"
             app:expandedTitleTextAppearance="@style/ToolBarTitleShadow"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:toolbarId="@+id/toolbar">
@@ -30,7 +30,7 @@
                 android:id="@+id/details_poster"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#9DA7FF"
+                android:background="@color/colorPrimary"
                 android:fitsSystemWindows="true"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_launcher_foreground"
@@ -52,10 +52,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:backgroundTint="#9DA7FF"
+        android:backgroundTint="@color/colorPrimary"
         android:elevation="4dp"
         android:src="@drawable/baseline_expand_more_24"
-        app:backgroundTint="#B1B1B1"
+        app:backgroundTint="@color/colorPrimary"
         app:layout_anchor="@id/app_bar_layout"
         app:layout_anchorGravity="end|bottom"
         app:maxImageSize="35dp"
@@ -74,29 +74,29 @@
             android:layout_marginTop="27dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="16sp"
             tools:text="@tools:sample/lorem/random" />
 
     </androidx.core.widget.NestedScrollView>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraint_lay"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior">
+    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
+    <!--        android:id="@+id/constraint_lay"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="bottom"-->
+    <!--        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior">-->
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bottom_rect"
-            app:itemIconTint="@color/white"
-            app:itemTextColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="@id/constraint_lay"
-            app:menu="@menu/bottom_navigation_menu" />
+    <!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
+    <!--            android:id="@+id/bottom_navigation"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:background="@drawable/bottom_rect"-->
+    <!--            app:itemIconTint="@color/white"-->
+    <!--            app:itemTextColor="@color/white"-->
+    <!--            app:layout_constraintBottom_toBottomOf="@id/constraint_lay"-->
+    <!--            app:menu="@menu/bottom_navigation_menu" />-->
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

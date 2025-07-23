@@ -12,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -39,6 +40,27 @@ class MainActivity : AppCompatActivity() {
         //animStart()
         //objAnimStart()
         startFragment()
+    }
+
+    override fun onBackPressed() {
+
+        if (supportFragmentManager.backStackEntryCount == 1) {
+            AlertDialog.Builder(this)
+                .setIcon(R.drawable.baseline_exit_to_app_24)
+                .setTitle("Вы действительно хотите выйти?")
+                .setNegativeButton("Нет") {_, _ ->
+
+                }
+                .setPositiveButton("Да") {_, _ ->
+                    super.onBackPressed()
+                    finish()
+                }
+                .show()
+        }
+        else {
+            super.onBackPressed()
+        }
+
     }
 
     fun startFragment() {
@@ -107,6 +129,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
 
     //Для теста работы DiffUtil
 //        val diffTest = mutableListOf<Film>()

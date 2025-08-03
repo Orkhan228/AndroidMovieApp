@@ -110,7 +110,18 @@ class MainActivity : AppCompatActivity() {
 
             when (it.itemId) {
                 R.id.favorites -> {
-                    Toast.makeText(this, "Favorites", Toast.LENGTH_SHORT).show()
+                    //Создал проверку чтобы экран с избранным не открывался бесконечное количество раз
+                    if (supportFragmentManager.findFragmentByTag("FavoritesFragment") == null) {
+                        supportFragmentManager
+                            .beginTransaction()
+                            .replace(R.id.fragment_container, FavoritesFragment(), "FavoritesFragment")
+                            //Нужно для того, чтобы работал popBackStack
+                            .addToBackStack("FavoritesFragment")
+                            .commit()
+                    }
+                    else {
+                        supportFragmentManager.popBackStack("FavoritesFragment", 0)
+                    }
                     true
                 }
 

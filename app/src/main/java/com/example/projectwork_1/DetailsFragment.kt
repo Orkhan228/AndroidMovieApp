@@ -1,5 +1,6 @@
 package com.example.projectwork_1
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,9 +25,11 @@ class DetailsFragment : Fragment() {
     lateinit var detDesc: TextView
     lateinit var detPost: AppCompatImageView
     lateinit var detToolBar: Toolbar
-    lateinit var detFab: FloatingActionButton
+    lateinit var detFabShare: FloatingActionButton
     lateinit var coordinatorLay: CoordinatorLayout
     lateinit var botNav: BottomNavigationView
+    lateinit var detFabFav: FloatingActionButton
+    private val favDataBase = FilmsDatabase.favoriteFilms
 
 
     override fun onCreateView(
@@ -43,9 +46,10 @@ class DetailsFragment : Fragment() {
         detDesc = view.findViewById<TextView>(R.id.details_description)
         detPost = view.findViewById<AppCompatImageView>(R.id.details_poster)
         detToolBar = view.findViewById<Toolbar>(R.id.details_toolbar)
-        detFab = view.findViewById<FloatingActionButton>(R.id.details_fab)
+        detFabShare = view.findViewById<FloatingActionButton>(R.id.details_fab)
         coordinatorLay = view.findViewById<CoordinatorLayout>(R.id.coordinator_lay)
         //botNav = view.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        detFabFav = view.findViewById<FloatingActionButton>(R.id.details_fab_fav)
 
 
         detActivity()
@@ -76,10 +80,38 @@ class DetailsFragment : Fragment() {
 //            false
 //        }
 
-        detFab.setOnClickListener {
-            Toast.makeText(requireActivity(), "Вы поделились этим фильмом", Toast.LENGTH_SHORT)
-                .show()
+        detFabShare.setOnClickListener {
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.putExtra(Intent.EXTRA_TEXT, "Глянь этот фильм: ${film?.title} \n \n ${film?.description}")
+            intent.type = "text/plain"
+            startActivity(Intent.createChooser(intent, "Поделиться:"))
         }
+
+        detFabFav.setImageResource(
+            if (film!!.isInFavorites) R.drawable.baseline_favorite_24
+            else R.drawable.baseline_favorite_border_24
+        )
+
+        detFabFav.setOnClickListener {
+
+            if (!film.isInFavorites) {
+                film.isInFavorites = true
+                favDataBase.add(film)
+                detFabFav.setImageResource(R.drawable.baseline_favorite_24)
+                Toast.makeText(requireContext(), "Добавлено в Избранное", Toast.LENGTH_SHORT).show()
+
+            }
+            else {
+                film.isInFavorites = false
+                favDataBase.remove(film)
+                detFabFav.setImageResource(R.drawable.baseline_favorite_border_24)
+                Toast.makeText(requireContext(), "Удалено в Избранное", Toast.LENGTH_SHORT).show()
+
+            }
+
+        }
+
+
 
     }
 }

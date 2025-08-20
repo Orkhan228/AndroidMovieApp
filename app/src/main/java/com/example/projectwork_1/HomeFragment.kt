@@ -6,16 +6,27 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.AutoTransition
+import androidx.transition.Fade
+import androidx.transition.Scene
+import androidx.transition.Slide
+import androidx.transition.TransitionManager
+import androidx.transition.TransitionSet
+import com.bumptech.glide.Glide
 import kotlinx.android.parcel.Parcelize
 import java.util.Locale
 
@@ -23,8 +34,23 @@ import java.util.Locale
 class HomeFragment : Fragment() {
 
     private val newDataBase = FilmsDatabase.dataBase
+    lateinit var searchView: SearchView
+    lateinit var recyclerView: RecyclerView
+    private var isFirstLaunch = true
 
-//    private var filmDataBase = mutableListOf<Film>()
+    init {
+        exitTransition = Slide(Gravity.START).apply {
+            mode = Slide.MODE_OUT
+            duration = 550
+            interpolator = AccelerateInterpolator()
+            propagation = null
+        }
+
+        reenterTransition = Fade(Fade.MODE_IN).apply {
+            duration = 800
+            propagation = null
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,53 +61,98 @@ class HomeFragment : Fragment() {
 
     }
 
+
     @SuppressLint("SuspiciousIndentation")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        postponeEnterTransition()
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
-        val searchView = view.findViewById<SearchView>(R.id.search_view)
+        //Создание анимации появления главного фрагмента
+        val sceneRoot = view.findViewById<CoordinatorLayout>(R.id.home_fragment_root)
+        val scene = Scene.getSceneForLayout(sceneRoot, R.layout.merge_home_screen_content, requireContext())
 
-        val adapter = FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
-            override fun click(film: Film) {
-                (requireActivity() as MainActivity).launchDetFragment(film)
+        scene.setEnterAction {
+
+            recyclerView = sceneRoot.findViewById<RecyclerView>(R.id.recycler_view)
+            searchView = sceneRoot.findViewById<SearchView>(R.id.search_view)
+
+            val adapter = FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
+                override fun click(film: Film) {
+                    (requireActivity() as MainActivity).launchDetFragment(film)
+                }
+            })
+            recyclerView?.adapter = adapter
+            recyclerView?.layoutManager = LinearLayoutManager(requireActivity())
+            val decorator = FilmListItemDecor(8)
+            recyclerView?.addItemDecoration(decorator)
+
+
+            adapter.addItems(newDataBase)
+
+
+
+            //При нажатии на весь SearchView, чтобы производился поиск
+            searchView.setOnClickListener {
+                searchView.isIconified = false
             }
-        })
-        recyclerView?.adapter = adapter
-        recyclerView?.layoutManager = LinearLayoutManager(requireActivity())
-        val decorator = FilmListItemDecor(8)
-        recyclerView?.addItemDecoration(decorator)
-
-        adapter.addItems(newDataBase)
 
 
-        //При нажатии на весь SearchView, чтобы производился поиск
-        searchView.setOnClickListener {
-            searchView.isIconified = false
+            //Слушатель на SearchView
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return true
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    if (newText!!.isEmpty()) {
+                        adapter.addItems(newDataBase)
+                        return true
+                    } else {
+                        val result = newDataBase.filter {
+                            it.title.lowercase(Locale.getDefault()).contains(
+                                newText.lowercase(
+                                    Locale.getDefault()
+                                )
+                            )
+                        }
+                        adapter.addItems(result as MutableList<Film>)
+                    }
+                    return true
+                }
+            })
+
+
+        }
+        val searchSlide = TransitionSet().apply {
+            addTransition(Slide(Gravity.START))
+            addTransition(Fade(Fade.MODE_IN))
+            addTarget(R.id.search_view)
+        }
+
+        val recyclerSlide = TransitionSet().apply {
+            addTransition(Slide(Gravity.END))
+            addTransition(Fade(Fade.MODE_IN))
+            addTarget(R.id.recycler_view)
+        }
+
+        val customTransition = TransitionSet().apply {
+            addTransition(searchSlide)
+            addTransition(recyclerSlide)
+            duration = 550
         }
 
 
-        //Слушатель на SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return true
-            }
+        //Сделал логику, чтобы только при запуске была анимация
+        if (isFirstLaunch) {
+            TransitionManager.go(scene, customTransition)
+            isFirstLaunch = false
+        }
+        else {
+            TransitionManager.go(scene)
+        }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                if (newText!!.isEmpty()) {
-                    adapter.addItems(newDataBase)
-                    return true
-                }
-                else {
-                    val result = newDataBase.filter {
-                        it.title.lowercase(Locale.getDefault()).contains(newText.lowercase(
-                            Locale.getDefault()))
-                    }
-                    adapter.addItems(result as MutableList<Film>)
-                }
-                return true
-            }
-        })
+        startPostponedEnterTransition()
+
 
     }
 
@@ -92,8 +163,13 @@ class HomeFragment : Fragment() {
 
         fun bind(film: Film) {
             title.text = film.title
-            poster.setImageResource(film.poster)
+            poster.transitionName = "poster_${film.title}"
+            Glide.with(itemView)
+                .load(film.poster)
+                .centerCrop()
+                .into(poster)
             description.text = film.description
+
         }
     }
 
@@ -136,6 +212,8 @@ class HomeFragment : Fragment() {
             items = newData
             diffRes.dispatchUpdatesTo(this)
         }
+
+
 
         interface OnItemClickListener {
             fun click(film: Film)

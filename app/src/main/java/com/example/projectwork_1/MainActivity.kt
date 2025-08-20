@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.AutoTransition
 import androidx.versionedparcelable.ParcelField
 import androidx.versionedparcelable.VersionedParcelize
 import com.google.android.material.appbar.MaterialToolbar
@@ -66,7 +67,8 @@ class MainActivity : AppCompatActivity() {
     fun startFragment() {
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.fragment_container, HomeFragment())
+            .setReorderingAllowed(true)
+            .replace(R.id.fragment_container, HomeFragment())
             .addToBackStack(null)
             .commit()
     }
@@ -75,13 +77,18 @@ class MainActivity : AppCompatActivity() {
         val bundle = Bundle()
         bundle.putParcelable("film", film)
 
-        val fragment = DetailsFragment()
-        fragment.arguments = bundle
+//        val fragment = DetailsFragment()
+//        fragment.arguments = bundle
+
+        val secondFragment = DetailsFragment()
+        secondFragment.arguments = bundle
+        secondFragment.sharedElementEnterTransition = AutoTransition().setDuration(800)
 
         supportFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+            .setReorderingAllowed(true)
+            .replace(R.id.fragment_container, secondFragment)
+            //.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
             .addToBackStack(null)
             .commit()
     }

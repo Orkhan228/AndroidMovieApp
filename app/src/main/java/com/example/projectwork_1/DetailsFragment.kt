@@ -2,9 +2,11 @@ package com.example.projectwork_1
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +18,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.transition.Fade
+import androidx.transition.Slide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -31,6 +35,24 @@ class DetailsFragment : Fragment() {
     lateinit var detFabFav: FloatingActionButton
     private val favDataBase = FilmsDatabase.favoriteFilms
 
+    init {
+        enterTransition = Slide(Gravity.END).apply {
+            duration = 1050
+            interpolator = DecelerateInterpolator()
+            propagation = null
+        }
+
+        returnTransition = Fade(Fade.MODE_OUT).apply {
+            duration = 800
+            propagation = null
+        }
+
+        exitTransition = Fade(Fade.MODE_OUT).apply {
+            duration = 800
+            propagation = null
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +64,7 @@ class DetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        postponeEnterTransition()
 
         detDesc = view.findViewById<TextView>(R.id.details_description)
         detPost = view.findViewById<AppCompatImageView>(R.id.details_poster)
@@ -53,6 +76,7 @@ class DetailsFragment : Fragment() {
 
 
         detActivity()
+        startPostponedEnterTransition()
     }
 
     fun detActivity() {
@@ -110,8 +134,5 @@ class DetailsFragment : Fragment() {
             }
 
         }
-
-
-
     }
 }

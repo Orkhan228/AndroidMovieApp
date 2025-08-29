@@ -6,9 +6,8 @@
         <item name="colorPrimary">#FF004D</item>
         <item name="colorPrimaryDark">#000000</item>
         <item name="colorAccent">#FFFFFF</item>
-
-
-
+        <item name="android:statusBarColor">@color/red</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <style name="Theme.ProjectWork_1" parent="Base.Theme.ProjectWork_1" />
@@ -17,9 +16,11 @@
         <item name="android:background">@color/colorPrimary</item>
     </style>
 
-    <style name="activity_style" parent="ThemeOverlay.MaterialComponents">
-        <item name="android:background">@drawable/grad_rect</item>
+    <style name="ThemeForSplashScreen" parent="Base.Theme.ProjectWork_1">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
+
     
     <style name="ToolBarTitleShadow" parent="TextAppearance.AppCompat.Large">
         <item name="android:textSize">38sp</item>

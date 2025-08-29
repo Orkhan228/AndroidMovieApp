@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/main_menu"
+        android:icon="@drawable/outline_home_24"
+        android:title="Main menu"
+        app:showAsAction="withText" />
     <item
         android:id="@+id/favorites"
         android:icon="@drawable/favorite_24px"
@@ -16,4 +22,5 @@
         android:icon="@drawable/collections_bookmark_24px"
         android:title="@string/collections"
         app:showAsAction="withText" />
+
 </menu>

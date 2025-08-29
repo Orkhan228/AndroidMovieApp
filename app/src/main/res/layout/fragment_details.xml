@@ -5,8 +5,11 @@
     android:id="@+id/coordinator_lay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/grad_rect"
     android:fitsSystemWindows="false"
-    tools:context=".DetailsFragment">
+    tools:context=".DetailsFragment"
+    android:visibility="visible"
+    tools:visibility="visible">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_layout"
@@ -34,8 +37,7 @@
                 android:fitsSystemWindows="true"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_launcher_foreground"
-                app:layout_collapseMode="parallax"
-                android:transitionName="poster"/>
+                app:layout_collapseMode="parallax" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/details_toolbar"

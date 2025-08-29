@@ -1,93 +1,155 @@
 package com.example.projectwork_1
 
-import android.content.Intent
-import android.content.res.Resources
-import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
-import android.os.Parcelable
-import android.view.LayoutInflater
-import android.view.View
+import android.transition.Fade
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.FragmentTransaction
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.AutoTransition
-import androidx.versionedparcelable.ParcelField
-import androidx.versionedparcelable.VersionedParcelize
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.Fragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.parcel.Parcelize
+
+lateinit var mainLayout: ConstraintLayout
+private var lastFragmentTag: String? = null
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        //Проверяем текущую версию API смартфона, если больше или равно 30, то говорим системе не настраивать отступы,
+        //мы сами их сделаем
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+        }
+        //Если меньше 30, то система сама настраивает отступы
+        else {
+            WindowCompat.setDecorFitsSystemWindows(window, true)
+        }
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_menu)
+
+        //WindowInsetsControllerCompat - Это обёртка (класс совместимости из AndroidX), которая управляет системными окнами (status bar, navigation bar, жестовые панели и т.д.)
+        //window → текущее окно активности (MainActivity), в котором рисуется интерфейс
+        //window.decorView → корневое View окна (над всеми твоими layout’ами). Через него можно управлять поведением системных элементов.
+        val wic = WindowInsetsControllerCompat(window, window.decorView)
+        //С помощью объекта-контроллера меняем цвет статус бара на белый.
+        wic.isAppearanceLightStatusBars = false  // false → светлый текст, true → тёмный текст
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            ViewCompat.setOnApplyWindowInsetsListener(bottomNavigationView) { view, insets ->
+                val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    bottomMargin = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                        systemBarsInsets.bottom
+                    }
+                    else {
+                        0
+                    }
+                }
+                insets
+            }
+        } else {
+            // Для API <30 используем обычные отступы
+            bottomNavigationView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = 0
+            }
         }
+
+        mainLayout = findViewById<ConstraintLayout>(R.id.main)
+
         initNavigation()
         //animStart()
         //objAnimStart()
         startFragment()
     }
 
+    private fun checkFragmentExistence(tag: String): Fragment? {
+        val tagFragment = supportFragmentManager.findFragmentByTag(tag)
+        return tagFragment
+    }
+
+    private fun changeFragment(fragment: Fragment, tag: String) {
+        lastFragmentTag?.let { prevTag ->
+            //Здесь я использую constantState?.newDrawable()?.mutate(), чтобы сделать копию drawable.
+            //Иначе фон просто «переедет» из фрагмента (и у него он исчезнет).
+            val prevFragment = supportFragmentManager.findFragmentByTag(prevTag)
+            val bg = prevFragment?.view?.background
+            mainLayout.background = bg?.constantState?.newDrawable()?.mutate()
+        }
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment, tag)
+            .addToBackStack(null)
+            .commit()
+
+        lastFragmentTag = tag
+    }
+
     override fun onBackPressed() {
 
-        if (supportFragmentManager.backStackEntryCount == 1) {
-            AlertDialog.Builder(this)
-                .setIcon(R.drawable.baseline_exit_to_app_24)
-                .setTitle("Вы действительно хотите выйти?")
-                .setNegativeButton("Нет") {_, _ ->
+        //Переопределил этот метод, для того чтобы кнопка системная назад,
+        //работала только для фрагмента с деталями и выхода из приложения.
+        val fm = supportFragmentManager
+        val fragments = fm.fragments
+        val currentFragment = fragments.lastOrNull { it.isVisible }
 
-                }
-                .setPositiveButton("Да") {_, _ ->
-                    super.onBackPressed()
-                    finish()
-                }
-                .show()
-        }
-        else {
-            super.onBackPressed()
-        }
+        when (currentFragment) {
+            is DetailsFragment -> fm.popBackStack()
+            is HomeFragment -> {
+                AlertDialog.Builder(this)
+                    .setIcon(R.drawable.baseline_exit_to_app_24)
+                    .setTitle("Вы действительно хотите выйти?")
+                    .setNegativeButton("Нет") { _, _ ->
 
+                    }
+                    .setPositiveButton("Да") { _, _ ->
+                        super.onBackPressed()
+                        finish()
+                    }
+                    .show()
+            }
+
+            else -> {
+            }
+        }
     }
 
     fun startFragment() {
         supportFragmentManager
             .beginTransaction()
             .setReorderingAllowed(true)
-            .replace(R.id.fragment_container, HomeFragment())
-            .addToBackStack(null)
+            .replace(R.id.fragment_container, HomeFragment(), "mainMenu")
             .commit()
     }
 
-    fun launchDetFragment(film: Film) {
+    //Для начала изменил сигнатуру метода, добавив изображение, которое и является общим элементом
+    fun launchDetFragment(film: Film, posterView: ImageView) {
         val bundle = Bundle()
         bundle.putParcelable("film", film)
 
-//        val fragment = DetailsFragment()
-//        fragment.arguments = bundle
-
         val secondFragment = DetailsFragment()
         secondFragment.arguments = bundle
-        secondFragment.sharedElementEnterTransition = AutoTransition().setDuration(800)
 
         supportFragmentManager
             .beginTransaction()
             .setReorderingAllowed(true)
-            .replace(R.id.fragment_container, secondFragment)
+            //добавляем общий элемент, из сигнатуры метода
+            .addSharedElement(posterView, posterView.transitionName)
+            .replace(R.id.fragment_container, secondFragment, "details")
             //.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
             .addToBackStack(null)
             .commit()
@@ -113,43 +175,53 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "There will be navigation here someday", Toast.LENGTH_SHORT).show()
         }
 
-        bottom_view.setOnNavigationItemSelectedListener {
+        bottom_view.setOnItemSelectedListener {
 
             when (it.itemId) {
                 R.id.favorites -> {
-                    //Создал проверку чтобы экран с избранным не открывался бесконечное количество раз
-                    if (supportFragmentManager.findFragmentByTag("FavoritesFragment") == null) {
-                        supportFragmentManager
-                            .beginTransaction()
-                            .replace(R.id.fragment_container, FavoritesFragment(), "FavoritesFragment")
-                            //Нужно для того, чтобы работал popBackStack
-                            .addToBackStack("FavoritesFragment")
-                            .commit()
-                    }
-                    else {
-                        supportFragmentManager.popBackStack("FavoritesFragment", 0)
-                    }
+                    val tag = "favorites"
+                    val fragment = checkFragmentExistence(tag)
+                    changeFragment(fragment ?: FavoritesFragment(), tag)
+
+
                     true
                 }
 
                 R.id.watch_later -> {
-                    Toast.makeText(this, "Watch later", Toast.LENGTH_SHORT).show()
+                    val tag = "watchLater"
+                    val fragment = checkFragmentExistence(tag)
+                    changeFragment(fragment ?: WatchLaterFragment(), tag)
+
                     true
                 }
 
                 R.id.collections -> {
-                    Toast.makeText(this, "Collections", Toast.LENGTH_SHORT).show()
+                    val tag = "collections"
+                    val fragment = checkFragmentExistence(tag)
+                    changeFragment(fragment ?: CollectionsFragment(), tag)
+
+
+                    true
+                }
+
+                R.id.main_menu -> {
+                    val tag = "mainMenu"
+                    val fragment = checkFragmentExistence(tag)
+                    changeFragment(fragment ?: HomeFragment(), tag)
+
                     true
                 }
 
                 else -> false
             }
         }
+        bottom_view.selectedItemId = R.id.main_menu
 
     }
+}
 
 
-    //Для теста работы DiffUtil
+//Для теста работы DiffUtil
 //        val diffTest = mutableListOf<Film>()
 //        diffTest.addAll(filmDataBase)
 //        diffTest.add(Film("Hulk", R.drawable.incredible_hulk, "Он большой. Он сильный. Он вспыльчив. И своей славой он обязан сомнительным веществам, повышающим работоспособность." +
@@ -163,7 +235,6 @@ class MainActivity : AppCompatActivity() {
 //            }
 //            false
 //        }
-}
 //Вынес код анимаций в отдельный метод. ViewPropertyAnimation это как второй способ реализации анимаций.
 //    fun animStart() {
 //        val poster1Anim = findViewById<CardView>(R.id.poster_1)

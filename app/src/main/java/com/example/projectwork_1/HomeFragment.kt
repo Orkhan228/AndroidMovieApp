@@ -58,11 +58,8 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
-
     }
-
 
     @SuppressLint("SuspiciousIndentation")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -116,10 +113,7 @@ class HomeFragment : Fragment() {
             }
         })
 
-
         AnimationHelper.performFragmentCircularRevealAnimation(rootView, requireActivity(), 1)
-
-
     }
 
 }
@@ -128,6 +122,7 @@ class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val title: TextView = itemView.findViewById(R.id.title)
     val poster: ImageView = itemView.findViewById(R.id.poster)
     private val description: TextView = itemView.findViewById(R.id.description)
+    private val ratingView = itemView.findViewById<RatingDonutView>(R.id.rating_donut)
 
     fun bind(film: Film) {
         title.text = film.title
@@ -138,7 +133,7 @@ class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             .centerCrop()
             .into(poster)
         description.text = film.description
-
+        ratingView.setProgressAnimated((film.rating * 10).toInt())
     }
 }
 
@@ -248,6 +243,7 @@ data class Film(
     val title: String,
     val poster: Int,
     val description: String,
+    val rating: Float,
     var isInFavorites: Boolean = false,
 ) : Parcelable
 

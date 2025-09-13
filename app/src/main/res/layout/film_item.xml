@@ -12,7 +12,17 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        
+
+        <com.example.projectwork_1.RatingDonutView
+            android:id="@+id/rating_donut"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:translationZ="11dp"
+            app:stroke="9"
+            app:progress="77"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
         <ImageView
             android:id="@+id/poster"
             android:layout_width="150dp"
@@ -20,8 +30,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:src="@tools:sample/avatars"
-            android:scaleType="centerCrop"
-            android:transitionName="poster"/>
+            android:scaleType="centerCrop" />
 
         <TextView
             android:id="@+id/title"

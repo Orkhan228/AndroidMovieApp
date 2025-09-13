@@ -2,10 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fav_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".FavoritesFragment"
-    android:background="@drawable/grad_rect">
+    android:visibility="invisible"
+    tools:visibility="visible"
+    android:background="@drawable/fon_for_favorites">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/favorites_recycler_view"

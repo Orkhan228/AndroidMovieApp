@@ -27,6 +27,8 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
+import com.google.android.material.transition.MaterialFade
+import com.google.android.material.transition.MaterialSharedAxis
 import kotlinx.android.parcel.Parcelize
 import java.util.Locale
 
@@ -36,242 +38,213 @@ class HomeFragment : Fragment() {
     private val newDataBase = FilmsDatabase.dataBase
     lateinit var searchView: SearchView
     lateinit var recyclerView: RecyclerView
-    private var isFirstLaunch = true
+    lateinit var rootView: CoordinatorLayout
 
-    init {
-        exitTransition = Slide(Gravity.START).apply {
-            mode = Slide.MODE_OUT
-            duration = 550
-            interpolator = AccelerateInterpolator()
-            propagation = null
-        }
-
-        reenterTransition = Fade(Fade.MODE_IN).apply {
-            duration = 800
-            propagation = null
-        }
-    }
+//    init {
+//        exitTransition = MaterialFade().apply {
+//            duration = 500
+//            mode = MaterialFade.MODE_OUT
+//            propagation = null
+//        }
+//
+//        reenterTransition = MaterialFade().apply {
+//            duration = 800
+//            mode = MaterialFade.MODE_IN
+//            propagation = null
+//        }
+//    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false)
-
     }
-
 
     @SuppressLint("SuspiciousIndentation")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        postponeEnterTransition()
 
-        //Создание анимации появления главного фрагмента
-        val sceneRoot = view.findViewById<CoordinatorLayout>(R.id.home_fragment_root)
-        val scene = Scene.getSceneForLayout(sceneRoot, R.layout.merge_home_screen_content, requireContext())
+        recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
+        searchView = view.findViewById<SearchView>(R.id.search_view)
+        rootView = view.findViewById<CoordinatorLayout>(R.id.home_fragment_root)
 
-        scene.setEnterAction {
-
-            recyclerView = sceneRoot.findViewById<RecyclerView>(R.id.recycler_view)
-            searchView = sceneRoot.findViewById<SearchView>(R.id.search_view)
-
-            val adapter = FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
-                override fun click(film: Film) {
-                    (requireActivity() as MainActivity).launchDetFragment(film)
-                }
-            })
-            recyclerView?.adapter = adapter
-            recyclerView?.layoutManager = LinearLayoutManager(requireActivity())
-            val decorator = FilmListItemDecor(8)
-            recyclerView?.addItemDecoration(decorator)
+        val adapter = FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
+            //При клике мы открываем фрагмент с деталями, передаем туда фильм на который мы нажали, и изображение
+            override fun click(film: Film, posterView: ImageView) {
+                (requireActivity() as MainActivity).launchDetFragment(film, posterView)
+            }
+        })
+        recyclerView?.adapter = adapter
+        recyclerView?.layoutManager = LinearLayoutManager(requireActivity())
+        val decorator = FilmListItemDecor(8)
+        recyclerView?.addItemDecoration(decorator)
 
 
-            adapter.addItems(newDataBase)
+        adapter.addItems(newDataBase)
+
+        //При нажатии на весь SearchView, чтобы производился поиск
+        searchView.setOnClickListener {
+            searchView.isIconified = false
+        }
 
 
-
-            //При нажатии на весь SearchView, чтобы производился поиск
-            searchView.setOnClickListener {
-                searchView.isIconified = false
+        //Слушатель на SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
             }
 
-
-            //Слушатель на SearchView
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                if (newText!!.isEmpty()) {
+                    adapter.addItems(newDataBase)
                     return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    if (newText!!.isEmpty()) {
-                        adapter.addItems(newDataBase)
-                        return true
-                    } else {
-                        val result = newDataBase.filter {
-                            it.title.lowercase(Locale.getDefault()).contains(
-                                newText.lowercase(
-                                    Locale.getDefault()
-                                )
+                } else {
+                    val result = newDataBase.filter {
+                        it.title.lowercase(Locale.getDefault()).contains(
+                            newText.lowercase(
+                                Locale.getDefault()
                             )
-                        }
-                        adapter.addItems(result as MutableList<Film>)
+                        )
                     }
-                    return true
+                    adapter.addItems(result as MutableList<Film>)
                 }
-            })
-
-
-        }
-        val searchSlide = TransitionSet().apply {
-            addTransition(Slide(Gravity.START))
-            addTransition(Fade(Fade.MODE_IN))
-            addTarget(R.id.search_view)
-        }
-
-        val recyclerSlide = TransitionSet().apply {
-            addTransition(Slide(Gravity.END))
-            addTransition(Fade(Fade.MODE_IN))
-            addTarget(R.id.recycler_view)
-        }
-
-        val customTransition = TransitionSet().apply {
-            addTransition(searchSlide)
-            addTransition(recyclerSlide)
-            duration = 550
-        }
-
-
-        //Сделал логику, чтобы только при запуске была анимация
-        if (isFirstLaunch) {
-            TransitionManager.go(scene, customTransition)
-            isFirstLaunch = false
-        }
-        else {
-            TransitionManager.go(scene)
-        }
-
-        startPostponedEnterTransition()
-
-
-    }
-
-    class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val title: TextView = itemView.findViewById(R.id.title)
-        private val poster: ImageView = itemView.findViewById(R.id.poster)
-        private val description: TextView = itemView.findViewById(R.id.description)
-
-        fun bind(film: Film) {
-            title.text = film.title
-            poster.transitionName = "poster_${film.title}"
-            Glide.with(itemView)
-                .load(film.poster)
-                .centerCrop()
-                .into(poster)
-            description.text = film.description
-
-        }
-    }
-
-    class FilmListAdapter(private val clickListener: OnItemClickListener) :
-        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-        private var items = mutableListOf<Film>()
-
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
-        ): RecyclerView.ViewHolder {
-            val view =
-                LayoutInflater.from(parent.context).inflate(R.layout.film_item, parent, false)
-            return FilmViewHolder(view)
-        }
-
-        override fun onBindViewHolder(
-            holder: RecyclerView.ViewHolder,
-            position: Int
-        ) {
-            when (holder) {
-                is FilmViewHolder -> {
-                    holder.bind(items[position])
-                    holder.itemView.setOnClickListener { clickListener.click(items[position]) }
-                }
+                return true
             }
-        }
+        })
 
-        override fun getItemCount(): Int {
-            return items.size
-        }
-
-        fun addItems(list: MutableList<Film>) {
-            //DiffUtil из дополнительного задания реализован
-            val oldData = items
-            val newData = list.toMutableList()
-            val diff = FilmDiffUtil(oldData, newData)
-            val diffRes = DiffUtil.calculateDiff(diff)
-            items = newData
-            diffRes.dispatchUpdatesTo(this)
-        }
-
-
-
-        interface OnItemClickListener {
-            fun click(film: Film)
-        }
+        AnimationHelper.performFragmentCircularRevealAnimation(rootView, requireActivity(), 1)
     }
 
-    class FilmDiffUtil(val oldList: List<Film>, val newList: List<Film>) :
-        DiffUtil.Callback() {
-        override fun getOldListSize(): Int {
-            return oldList.size
-        }
+}
 
-        override fun getNewListSize(): Int {
-            return newList.size
-        }
+class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private val title: TextView = itemView.findViewById(R.id.title)
+    val poster: ImageView = itemView.findViewById(R.id.poster)
+    private val description: TextView = itemView.findViewById(R.id.description)
+    private val ratingView = itemView.findViewById<RatingDonutView>(R.id.rating_donut)
 
-        override fun areItemsTheSame(
-            oldItemPosition: Int,
-            newItemPosition: Int
-        ): Boolean {
-            return oldList[oldItemPosition].title == newList[newItemPosition].title
-        }
-
-        override fun areContentsTheSame(
-            oldItemPosition: Int,
-            newItemPosition: Int
-        ): Boolean {
-            return oldList[oldItemPosition].poster == newList[newItemPosition].poster &&
-                    oldList[oldItemPosition].description == newList[newItemPosition].description
-        }
-    }
-
-    class FilmListItemDecor(private val paddingInDp: Int) : RecyclerView.ItemDecoration() {
-        private val Int.convertPx: Int
-            get() {
-                return this * Resources.getSystem().displayMetrics.density.toInt()
-            }
-
-        override fun getItemOffsets(
-            outRect: Rect,
-            view: View,
-            parent: RecyclerView,
-            state: RecyclerView.State
-        ) {
-            super.getItemOffsets(outRect, view, parent, state)
-            outRect.top = paddingInDp.convertPx
-            outRect.right = paddingInDp.convertPx
-            outRect.left = paddingInDp.convertPx
-        }
+    fun bind(film: Film) {
+        title.text = film.title
+        //создаем для каждого постера элемента свой transitionName
+        poster.transitionName = "poster_${film.title}"
+        Glide.with(itemView)
+            .load(film.poster)
+            .centerCrop()
+            .into(poster)
+        description.text = film.description
+        ratingView.setProgressAnimated((film.rating * 10).toInt())
     }
 }
+
+class FilmListAdapter(private val clickListener: OnItemClickListener) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    //текущий список фильмов, который отображается в RecyclerView
+    private var items = mutableListOf<Film>()
+
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): RecyclerView.ViewHolder {
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.film_item, parent, false)
+        return FilmViewHolder(view)
+    }
+
+    //Вызывается когда нужно заполнить элемент данными
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
+        when (holder) {
+            is FilmViewHolder -> {
+                //привязываем данные
+                holder.bind(items[position])
+                //ставим слушатель на нажатие на элемент списка, при клике передается позиция элемента и картинка, реализация будет при создании адаптера
+                holder.itemView.setOnClickListener {
+                    clickListener.click(
+                        items[position],
+                        holder.poster
+                    )
+                }
+            }
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return items.size
+    }
+
+    fun addItems(list: MutableList<Film>) {
+        //DiffUtil из дополнительного задания реализован
+        val oldData = items
+        val newData = list.toMutableList()
+        val diff = FilmDiffUtil(oldData, newData)
+        val diffRes = DiffUtil.calculateDiff(diff)
+        items = newData
+        diffRes.dispatchUpdatesTo(this)
+    }
+
+
+    interface OnItemClickListener {
+        fun click(film: Film, posterView: ImageView)
+    }
+}
+
+class FilmDiffUtil(val oldList: List<Film>, val newList: List<Film>) :
+    DiffUtil.Callback() {
+    override fun getOldListSize(): Int {
+        return oldList.size
+    }
+
+    override fun getNewListSize(): Int {
+        return newList.size
+    }
+
+    override fun areItemsTheSame(
+        oldItemPosition: Int,
+        newItemPosition: Int,
+    ): Boolean {
+        return oldList[oldItemPosition].title == newList[newItemPosition].title
+    }
+
+    override fun areContentsTheSame(
+        oldItemPosition: Int,
+        newItemPosition: Int,
+    ): Boolean {
+        return oldList[oldItemPosition].poster == newList[newItemPosition].poster &&
+                oldList[oldItemPosition].description == newList[newItemPosition].description
+    }
+}
+
+class FilmListItemDecor(private val paddingInDp: Int) : RecyclerView.ItemDecoration() {
+    private val Int.convertPx: Int
+        get() {
+            return this * Resources.getSystem().displayMetrics.density.toInt()
+        }
+
+    override fun getItemOffsets(
+        outRect: Rect,
+        view: View,
+        parent: RecyclerView,
+        state: RecyclerView.State,
+    ) {
+        super.getItemOffsets(outRect, view, parent, state)
+        outRect.top = paddingInDp.convertPx
+        outRect.right = paddingInDp.convertPx
+        outRect.left = paddingInDp.convertPx
+    }
+}
+
 
 @Parcelize
 data class Film(
     val title: String,
     val poster: Int,
     val description: String,
-    var isInFavorites: Boolean = false
+    val rating: Float,
+    var isInFavorites: Boolean = false,
 ) : Parcelable
 
 

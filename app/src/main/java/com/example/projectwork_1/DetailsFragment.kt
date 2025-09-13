@@ -1,12 +1,14 @@
 package com.example.projectwork_1
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -23,6 +25,10 @@ import androidx.transition.Slide
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.transition.MaterialContainerTransform
+import com.google.android.material.transition.MaterialFade
+import com.google.android.material.transition.MaterialFadeThrough
+import com.google.android.material.transition.MaterialSharedAxis
 
 class DetailsFragment : Fragment() {
 
@@ -31,26 +37,36 @@ class DetailsFragment : Fragment() {
     lateinit var detToolBar: Toolbar
     lateinit var detFabShare: FloatingActionButton
     lateinit var coordinatorLay: CoordinatorLayout
-    lateinit var botNav: BottomNavigationView
     lateinit var detFabFav: FloatingActionButton
     private val favDataBase = FilmsDatabase.favoriteFilms
 
     init {
-        enterTransition = Slide(Gravity.END).apply {
-            duration = 1050
-            interpolator = DecelerateInterpolator()
+
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            //это тот вьюгруп, где имеются два фрагмента, через которых и будет проходить анимация с общим элементом
+            drawingViewId = R.id.fragment_container
+            duration = 500
+            //цвет фона
+            scrimColor = Color.TRANSPARENT
             propagation = null
         }
 
-        returnTransition = Fade(Fade.MODE_OUT).apply {
-            duration = 800
-            propagation = null
-        }
-
-        exitTransition = Fade(Fade.MODE_OUT).apply {
-            duration = 800
-            propagation = null
-        }
+//        enterTransition = MaterialFade().apply {
+//            duration = 515
+//            propagation = null
+//        }
+//
+//        returnTransition = MaterialFade().apply {
+//            duration = 600
+//            mode = MaterialFade.MODE_OUT
+//            propagation = null
+//        }
+//
+//        exitTransition = MaterialFade().apply {
+//            duration = 600
+//            mode = MaterialFade.MODE_OUT
+//            propagation = null
+//        }
     }
 
 
@@ -82,6 +98,8 @@ class DetailsFragment : Fragment() {
     fun detActivity() {
 
         val film = arguments?.getParcelable<Film>("film")
+        val filmTitle = film?.title
+
         if (film == null) {
             detPost.setImageResource(R.drawable.baseline_error_24)
             detDesc.text = "There was an error occurred!"
@@ -90,6 +108,8 @@ class DetailsFragment : Fragment() {
             detPost.setImageResource(film.poster)
             detDesc.text = film.description
             detToolBar.title = film.title
+            //делаем транзишнНейм одинаковым
+            detPost.transitionName = "poster_$filmTitle"
         }
 
 //        botNav.setOnItemSelectedListener {
@@ -106,7 +126,10 @@ class DetailsFragment : Fragment() {
 
         detFabShare.setOnClickListener {
             val intent = Intent(Intent.ACTION_SEND)
-            intent.putExtra(Intent.EXTRA_TEXT, "Глянь этот фильм: ${film?.title} \n \n ${film?.description}")
+            intent.putExtra(
+                Intent.EXTRA_TEXT,
+                "Глянь этот фильм: ${film?.title} \n \n ${film?.description}"
+            )
             intent.type = "text/plain"
             startActivity(Intent.createChooser(intent, "Поделиться:"))
         }
@@ -124,8 +147,7 @@ class DetailsFragment : Fragment() {
                 detFabFav.setImageResource(R.drawable.baseline_favorite_24)
                 Toast.makeText(requireContext(), "Добавлено в Избранное", Toast.LENGTH_SHORT).show()
 
-            }
-            else {
+            } else {
                 film.isInFavorites = false
                 favDataBase.remove(film)
                 detFabFav.setImageResource(R.drawable.baseline_favorite_border_24)

@@ -27,6 +27,9 @@ import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
 import com.bumptech.glide.Glide
+import com.example.projectwork_1.databinding.ActivityMainBinding
+import com.example.projectwork_1.databinding.FilmItemBinding
+import com.example.projectwork_1.databinding.FragmentHomeBinding
 import com.google.android.material.transition.MaterialFade
 import com.google.android.material.transition.MaterialSharedAxis
 import kotlinx.android.parcel.Parcelize
@@ -36,38 +39,26 @@ import java.util.Locale
 class HomeFragment : Fragment() {
 
     private val newDataBase = FilmsDatabase.dataBase
-    lateinit var searchView: SearchView
-    lateinit var recyclerView: RecyclerView
-    lateinit var rootView: CoordinatorLayout
-
-//    init {
-//        exitTransition = MaterialFade().apply {
-//            duration = 500
-//            mode = MaterialFade.MODE_OUT
-//            propagation = null
-//        }
-//
-//        reenterTransition = MaterialFade().apply {
-//            duration = 800
-//            mode = MaterialFade.MODE_IN
-//            propagation = null
-//        }
-//    }
+    private lateinit var searchView: SearchView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var rootView: CoordinatorLayout
+    private lateinit var binding: FragmentHomeBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        binding = FragmentHomeBinding.inflate(layoutInflater, container, false)
+        return binding.root
     }
 
     @SuppressLint("SuspiciousIndentation")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        recyclerView = view.findViewById<RecyclerView>(R.id.recycler_view)
-        searchView = view.findViewById<SearchView>(R.id.search_view)
-        rootView = view.findViewById<CoordinatorLayout>(R.id.home_fragment_root)
+        recyclerView = binding.recyclerView
+        searchView = binding.searchView
+        rootView = binding.homeFragmentRoot
 
         val adapter = FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
             //При клике мы открываем фрагмент с деталями, передаем туда фильм на который мы нажали, и изображение
@@ -118,11 +109,12 @@ class HomeFragment : Fragment() {
 
 }
 
-class FilmViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val title: TextView = itemView.findViewById(R.id.title)
-    val poster: ImageView = itemView.findViewById(R.id.poster)
-    private val description: TextView = itemView.findViewById(R.id.description)
-    private val ratingView = itemView.findViewById<RatingDonutView>(R.id.rating_donut)
+class FilmViewHolder(val bindingRecycler: FilmItemBinding) : RecyclerView.ViewHolder(bindingRecycler.root) {
+
+    private val title: TextView = bindingRecycler.title
+    val poster: ImageView = bindingRecycler.poster
+    private val description: TextView = bindingRecycler.description
+    private val ratingView = bindingRecycler.ratingDonut
 
     fun bind(film: Film) {
         title.text = film.title
@@ -146,10 +138,10 @@ class FilmListAdapter(private val clickListener: OnItemClickListener) :
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
-    ): RecyclerView.ViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.film_item, parent, false)
-        return FilmViewHolder(view)
+    ): FilmViewHolder {
+        val binding =
+            FilmItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return FilmViewHolder(binding)
     }
 
     //Вызывается когда нужно заполнить элемент данными

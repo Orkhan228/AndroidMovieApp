@@ -12,19 +12,26 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import android.transition.Fade
 import com.airbnb.lottie.LottieAnimationView
+import com.example.projectwork_1.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivitySplashBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_splash)
+
+        binding = ActivitySplashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_splash)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        val lottieAnim = findViewById<LottieAnimationView>(R.id.lottie_image_animated)
+        val lottieAnim = binding.lottieImageAnimated
 
         val wic = WindowInsetsControllerCompat(window, window.decorView)
         //С помощью объекта-контроллера меняем цвет статус бара на белый.

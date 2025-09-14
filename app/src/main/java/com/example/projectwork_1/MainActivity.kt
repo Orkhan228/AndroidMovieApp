@@ -2,11 +2,10 @@ package com.example.projectwork_1
 
 import android.os.Build
 import android.os.Bundle
-import android.transition.Fade
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -17,13 +16,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
+import com.example.projectwork_1.databinding.ActivityMainBinding
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-lateinit var mainLayout: ConstraintLayout
+private lateinit var mainLayout: ConstraintLayout
 private var lastFragmentTag: String? = null
+private lateinit var bottomNavigationView: BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         //Проверяем текущую версию API смартфона, если больше или равно 30, то говорим системе не настраивать отступы,
         //мы сами их сделаем
@@ -37,9 +39,10 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_menu)
+        bottomNavigationView = binding.bottomMenu
 
         //WindowInsetsControllerCompat - Это обёртка (класс совместимости из AndroidX), которая управляет системными окнами (status bar, navigation bar, жестовые панели и т.д.)
         //window → текущее окно активности (MainActivity), в котором рисуется интерфейс
@@ -68,12 +71,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        mainLayout = findViewById<ConstraintLayout>(R.id.main)
+        mainLayout = binding.main
 
         initNavigation()
         //animStart()
         //objAnimStart()
         startFragment()
+
+        binding.titleToolBar = "Search It!"
     }
 
     private fun checkFragmentExistence(tag: String): Fragment? {
@@ -117,12 +122,11 @@ class MainActivity : AppCompatActivity() {
 
                     }
                     .setPositiveButton("Да") { _, _ ->
-                        super.onBackPressed()
+                        super.onBackPressedDispatcher.onBackPressed()
                         finish()
                     }
                     .show()
             }
-
             else -> {
             }
         }
@@ -150,15 +154,13 @@ class MainActivity : AppCompatActivity() {
             //добавляем общий элемент, из сигнатуры метода
             .addSharedElement(posterView, posterView.transitionName)
             .replace(R.id.fragment_container, secondFragment, "details")
-            //.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
             .addToBackStack(null)
             .commit()
     }
 
     fun initNavigation() {
 
-        val topAppBar = findViewById<MaterialToolbar>(R.id.topAppBar)
-        val bottom_view = findViewById<BottomNavigationView>(R.id.bottom_menu)
+        val topAppBar = binding.topAppBar
 
         topAppBar.setOnMenuItemClickListener {
             when (it.itemId) {
@@ -175,7 +177,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "There will be navigation here someday", Toast.LENGTH_SHORT).show()
         }
 
-        bottom_view.setOnItemSelectedListener {
+        bottomNavigationView.setOnItemSelectedListener {
 
             when (it.itemId) {
                 R.id.favorites -> {
@@ -215,8 +217,7 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
-        bottom_view.selectedItemId = R.id.main_menu
-
+        bottomNavigationView.selectedItemId = R.id.main_menu
     }
 }
 
@@ -316,9 +317,6 @@ class MainActivity : AppCompatActivity() {
 //        animatorSet.start()
 //    }
 
-//module24 Создание RecyclerView
-
-//private lateinit var filmsAdapter: FilmListAdapter
 
 
 

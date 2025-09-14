@@ -14,52 +14,36 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.projectwork_1.databinding.ActivityMainBinding
+import com.example.projectwork_1.databinding.FragmentFavoritesBinding
 import com.google.android.material.transition.MaterialFade
 
-lateinit var rootViewFav: FrameLayout
+
 
 class FavoritesFragment : Fragment() {
 
+    private lateinit var rootViewFav: FrameLayout
     private val favoritesDataBase = FilmsDatabase.favoriteFilms
-
-//    init {
-//        enterTransition = MaterialFade().apply {
-//            duration = 600
-//            mode = MaterialFade.MODE_IN
-//            propagation = null
-//        }
-//
-//        returnTransition = MaterialFade().apply {
-//            duration = 600
-//            mode = MaterialFade.MODE_OUT
-//            propagation = null
-//        }
-//
-//        exitTransition = MaterialFade().apply {
-//            duration = 515
-//            propagation = null
-//        }
-//    }
+    private lateinit var binding: FragmentFavoritesBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_favorites, container, false)
+        binding = FragmentFavoritesBinding.inflate(layoutInflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        rootViewFav = view.findViewById<FrameLayout>(R.id.fav_root)
+        rootViewFav = binding.favRoot
 
-        val favoritesRecycler = view.findViewById<RecyclerView>(R.id.favorites_recycler_view)
+        val favoritesRecycler = binding.favoritesRecyclerView
 
         var favoritesList = emptyList<Film>()
         favoritesList = favoritesDataBase

@@ -172,7 +172,7 @@ class RatingDonutView @JvmOverloads constructor(context: Context, attributeSet: 
         animator.duration = duration
         animator.interpolator = DecelerateInterpolator()
 
-        //Вызывается на каждом изменении значения, то есть ValueAnimator меняет щ=значения прогресса от startProgress до targetProgress
+        //Вызывается на каждом изменении значения, то есть ValueAnimator меняет значения прогресса от startProgress до targetProgress
         //и каждое изменение вызывает код внутри него. Далее записываем значение каждого кадра анимации и вызываем перерисовку.
         animator.addUpdateListener { animation ->
             progress = animation.animatedValue as Int

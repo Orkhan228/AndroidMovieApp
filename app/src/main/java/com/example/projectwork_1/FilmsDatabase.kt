@@ -66,5 +66,4 @@ object FilmsDatabase {
     )
 
     val favoriteFilms = mutableListOf<Film>()
-
 }

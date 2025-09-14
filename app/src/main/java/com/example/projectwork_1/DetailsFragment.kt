@@ -22,6 +22,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.transition.Fade
 import androidx.transition.Slide
+import com.example.projectwork_1.databinding.ActivityMainBinding
+import com.example.projectwork_1.databinding.FragmentDetailsBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -32,13 +34,14 @@ import com.google.android.material.transition.MaterialSharedAxis
 
 class DetailsFragment : Fragment() {
 
-    lateinit var detDesc: TextView
-    lateinit var detPost: AppCompatImageView
-    lateinit var detToolBar: Toolbar
-    lateinit var detFabShare: FloatingActionButton
-    lateinit var coordinatorLay: CoordinatorLayout
-    lateinit var detFabFav: FloatingActionButton
+    private lateinit var detDesc: TextView
+    private lateinit var detPost: AppCompatImageView
+    private lateinit var detToolBar: Toolbar
+    private lateinit var detFabShare: FloatingActionButton
+    private lateinit var coordinatorLay: CoordinatorLayout
+    private lateinit var detFabFav: FloatingActionButton
     private val favDataBase = FilmsDatabase.favoriteFilms
+    private lateinit var binding: FragmentDetailsBinding
 
     init {
 
@@ -50,46 +53,27 @@ class DetailsFragment : Fragment() {
             scrimColor = Color.TRANSPARENT
             propagation = null
         }
-
-//        enterTransition = MaterialFade().apply {
-//            duration = 515
-//            propagation = null
-//        }
-//
-//        returnTransition = MaterialFade().apply {
-//            duration = 600
-//            mode = MaterialFade.MODE_OUT
-//            propagation = null
-//        }
-//
-//        exitTransition = MaterialFade().apply {
-//            duration = 600
-//            mode = MaterialFade.MODE_OUT
-//            propagation = null
-//        }
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View? {
-        return inflater.inflate(R.layout.fragment_details, container, false)
+        binding = FragmentDetailsBinding.inflate(layoutInflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         postponeEnterTransition()
 
-        detDesc = view.findViewById<TextView>(R.id.details_description)
-        detPost = view.findViewById<AppCompatImageView>(R.id.details_poster)
-        detToolBar = view.findViewById<Toolbar>(R.id.details_toolbar)
-        detFabShare = view.findViewById<FloatingActionButton>(R.id.details_fab)
-        coordinatorLay = view.findViewById<CoordinatorLayout>(R.id.coordinator_lay)
-        //botNav = view.findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        detFabFav = view.findViewById<FloatingActionButton>(R.id.details_fab_fav)
-
+        detDesc = binding.detailsDescription
+        detPost = binding.detailsPoster
+        detToolBar = binding.detailsToolbar
+        detFabShare = binding.detailsFab
+        coordinatorLay = binding.coordinatorLay
+        detFabFav = binding.detailsFabFav
 
         detActivity()
         startPostponedEnterTransition()
@@ -111,18 +95,6 @@ class DetailsFragment : Fragment() {
             //делаем транзишнНейм одинаковым
             detPost.transitionName = "poster_$filmTitle"
         }
-
-//        botNav.setOnItemSelectedListener {
-//            when(it.itemId) {
-//                R.id.bot_fav -> Snackbar.make(coordinatorLay, "Добавлено в \"избранное\"", Snackbar.LENGTH_SHORT).setAction("Удалить") {
-//                    Toast.makeText(requireActivity(), "Удалено", Toast.LENGTH_SHORT).show()
-//                }.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.colorLightPrimary)).show()
-//                R.id.bot_watch_later -> Snackbar.make(coordinatorLay, "Добавлено в \"Смотреть позже\"", Snackbar.LENGTH_SHORT).setAction("Удалить") {
-//                    Toast.makeText(requireActivity(), "Удалено", Toast.LENGTH_SHORT).show()
-//                }.setActionTextColor(ContextCompat.getColor(requireActivity(), R.color.colorLightPrimary)).show()
-//            }
-//            false
-//        }
 
         detFabShare.setOnClickListener {
             val intent = Intent(Intent.ACTION_SEND)
@@ -146,15 +118,12 @@ class DetailsFragment : Fragment() {
                 favDataBase.add(film)
                 detFabFav.setImageResource(R.drawable.baseline_favorite_24)
                 Toast.makeText(requireContext(), "Добавлено в Избранное", Toast.LENGTH_SHORT).show()
-
             } else {
                 film.isInFavorites = false
                 favDataBase.remove(film)
                 detFabFav.setImageResource(R.drawable.baseline_favorite_border_24)
                 Toast.makeText(requireContext(), "Удалено в Избранное", Toast.LENGTH_SHORT).show()
-
             }
-
         }
     }
 }

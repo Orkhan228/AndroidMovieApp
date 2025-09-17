@@ -1,17 +1,14 @@
-package com.example.projectwork_1
+package com.example.projectwork_1.view.activities
 
 import android.animation.Animator
-import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
-import android.view.Window
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import android.transition.Fade
-import com.airbnb.lottie.LottieAnimationView
+import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.ActivitySplashBinding
 
 class SplashActivity : AppCompatActivity() {

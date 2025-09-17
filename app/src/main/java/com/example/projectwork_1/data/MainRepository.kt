@@ -1,6 +1,9 @@
-package com.example.projectwork_1
+package com.example.projectwork_1.data
 
-object FilmsDatabase {
+import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.R
+
+class MainRepository{
 
     val dataBase = mutableListOf<Film>(
         Film(

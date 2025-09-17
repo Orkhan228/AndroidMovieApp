@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.example.projectwork_1.RatingDonutView
+        <com.example.projectwork_1.view.customviews.RatingDonutView
             android:id="@+id/rating_donut"
             android:layout_width="50dp"
             android:layout_height="50dp"

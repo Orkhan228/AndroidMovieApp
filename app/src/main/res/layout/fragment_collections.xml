@@ -4,7 +4,7 @@
     android:id="@+id/root_collections"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CollectionsFragment"
+    tools:context=".view.fragments.CollectionsFragment"
     android:visibility="invisible"
     tools:visibility="visible"
     android:background="@drawable/fon_for_collections">

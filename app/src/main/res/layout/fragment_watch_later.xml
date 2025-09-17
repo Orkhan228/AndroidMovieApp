@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:id="@+id/root_watch_later"
     android:layout_height="match_parent"
-    tools:context=".WatchLaterFragment"
+    tools:context=".view.fragments.WatchLaterFragment"
     android:visibility="invisible"
     tools:visibility="visible"
     android:background="@drawable/fon_for_watch_laters">

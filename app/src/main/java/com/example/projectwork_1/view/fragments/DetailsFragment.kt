@@ -1,36 +1,25 @@
-package com.example.projectwork_1
+package com.example.projectwork_1.view.fragments
 
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
-import androidx.transition.Fade
-import androidx.transition.Slide
-import com.example.projectwork_1.databinding.ActivityMainBinding
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.viewmodel.DetailsFragmentViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialContainerTransform
-import com.google.android.material.transition.MaterialFade
-import com.google.android.material.transition.MaterialFadeThrough
-import com.google.android.material.transition.MaterialSharedAxis
 
 class DetailsFragment : Fragment() {
 
@@ -40,8 +29,15 @@ class DetailsFragment : Fragment() {
     private lateinit var detFabShare: FloatingActionButton
     private lateinit var coordinatorLay: CoordinatorLayout
     private lateinit var detFabFav: FloatingActionButton
-    private val favDataBase = FilmsDatabase.favoriteFilms
     private lateinit var binding: FragmentDetailsBinding
+    private val viewModel by lazy {
+        ViewModelProvider.NewInstanceFactory().create(DetailsFragmentViewModel::class.java)
+    }
+    private var favDataBase = mutableListOf<Film>()
+        set(value) {
+            if (field == value) return
+            field = value
+        }
 
     init {
 
@@ -66,6 +62,11 @@ class DetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        viewModel.favFilmsLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
+            favDataBase = it.toMutableList()
+        })
+
         postponeEnterTransition()
 
         detDesc = binding.detailsDescription
@@ -115,12 +116,12 @@ class DetailsFragment : Fragment() {
 
             if (!film.isInFavorites) {
                 film.isInFavorites = true
-                favDataBase.add(film)
+                viewModel.addToFavorites(film)
                 detFabFav.setImageResource(R.drawable.baseline_favorite_24)
                 Toast.makeText(requireContext(), "Добавлено в Избранное", Toast.LENGTH_SHORT).show()
             } else {
                 film.isInFavorites = false
-                favDataBase.remove(film)
+                viewModel.removeFromFavorites(film)
                 detFabFav.setImageResource(R.drawable.baseline_favorite_border_24)
                 Toast.makeText(requireContext(), "Удалено в Избранное", Toast.LENGTH_SHORT).show()
             }

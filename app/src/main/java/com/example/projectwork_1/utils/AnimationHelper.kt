@@ -1,12 +1,10 @@
-package com.example.projectwork_1
+package com.example.projectwork_1.utils
 
+import android.animation.Animator
 import android.app.Activity
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateInterpolator
-import androidx.constraintlayout.motion.widget.KeyPosition
-
-import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.math.hypot
 import kotlin.math.roundToInt

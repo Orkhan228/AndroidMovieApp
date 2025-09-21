@@ -8,7 +8,7 @@
     android:background="@drawable/grad_rect"
     android:visibility="invisible"
     tools:visibility="visible"
-    tools:context=".HomeFragment">
+    tools:context=".view.fragments.HomeFragment">
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

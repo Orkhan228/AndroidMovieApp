@@ -5,7 +5,7 @@
     android:id="@+id/fav_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FavoritesFragment"
+    tools:context=".view.fragments.FavoritesFragment"
     android:visibility="invisible"
     tools:visibility="visible"
     android:background="@drawable/fon_for_favorites">

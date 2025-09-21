@@ -1,13 +1,13 @@
-package com.example.projectwork_1
+package com.example.projectwork_1.view.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
 import com.example.projectwork_1.databinding.FragmentWatchLaterBinding
-
+import com.example.projectwork_1.utils.AnimationHelper
 
 class WatchLaterFragment : Fragment() {
 

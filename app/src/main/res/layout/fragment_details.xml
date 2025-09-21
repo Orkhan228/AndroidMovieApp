@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/grad_rect"
     android:fitsSystemWindows="false"
-    tools:context=".DetailsFragment"
+    tools:context=".view.fragments.DetailsFragment"
     android:visibility="visible"
     tools:visibility="visible">
 

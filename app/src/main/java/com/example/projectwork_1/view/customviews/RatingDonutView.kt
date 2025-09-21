@@ -1,4 +1,4 @@
-package com.example.projectwork_1
+package com.example.projectwork_1.view.customviews
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -8,13 +8,12 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
-import android.graphics.drawable.shapes.OvalShape
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.toColorInt
+import com.example.projectwork_1.R
 
 class RatingDonutView @JvmOverloads constructor(context: Context, attributeSet: AttributeSet) :
     View(context, attributeSet) {

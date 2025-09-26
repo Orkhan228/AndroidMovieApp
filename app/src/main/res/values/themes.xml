@@ -34,5 +34,6 @@
     <style name="SearchViewStyle">
         <item name="colorControlNormal">#000000</item>   <!-- Цвет иконок -->
         <item name="android:textColorPrimary">#000000</item> <!-- Цвет текста -->
+        <item name="hintTextColor">#000000</item>
     </style>
 </resources>

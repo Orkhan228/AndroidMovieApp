@@ -14,6 +14,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.Glide
+import com.example.projectwork_1.utils.ApiConstants
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
 import com.example.projectwork_1.domain.Film
@@ -90,7 +92,10 @@ class DetailsFragment : Fragment() {
             detDesc.text = "There was an error occurred!"
             detToolBar.title = "Error occurred!"
         } else {
-            detPost.setImageResource(film.poster)
+            Glide.with(this)
+                .load(ApiConstants.IMAGES_URL + "w780" + film.poster)
+                .centerCrop()
+                .into(detPost)
             detDesc.text = film.description
             detToolBar.title = film.title
             //делаем транзишнНейм одинаковым

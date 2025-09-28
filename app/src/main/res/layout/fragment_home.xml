@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:elevation="15dp"
+            android:hint="Search..."
             android:layout_margin="10dp"
             android:background="@drawable/search_view_shape"
             app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed"

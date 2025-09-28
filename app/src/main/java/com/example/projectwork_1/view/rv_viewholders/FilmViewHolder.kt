@@ -4,10 +4,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.projectwork_1.utils.ApiConstants
+import com.example.projectwork_1.App
 import com.example.projectwork_1.databinding.FilmItemBinding
 import com.example.projectwork_1.domain.Film
 
-class FilmViewHolder(val bindingRecycler: FilmItemBinding) : RecyclerView.ViewHolder(bindingRecycler.root) {
+class FilmViewHolder(bindingRecycler: FilmItemBinding) : RecyclerView.ViewHolder(bindingRecycler.root) {
 
     private val title: TextView = bindingRecycler.title
     val poster: ImageView = bindingRecycler.poster
@@ -19,7 +21,7 @@ class FilmViewHolder(val bindingRecycler: FilmItemBinding) : RecyclerView.ViewHo
         //создаем для каждого постера элемента свой transitionName
         poster.transitionName = "poster_${film.title}"
         Glide.with(itemView)
-            .load(film.poster)
+            .load(ApiConstants.IMAGES_URL + "w342" + film.poster)
             .centerCrop()
             .into(poster)
         description.text = film.description

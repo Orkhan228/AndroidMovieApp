@@ -70,6 +70,26 @@ class HomeFragment : Fragment() {
 
         adapter.addItems(filmsDataBase)
 
+        //добавляем слушатель на скролл ресайлер вью
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(
+                recyclerView: RecyclerView,
+                dx: Int,
+                dy: Int,
+            ) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val totalItemCount = layoutManager.itemCount
+                val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
+
+                //делаем логику, того что если осталось пять последних айтемов, то начинаем загрузку
+                if (totalItemCount <= lastVisibleItem + 5) {
+                    viewModel.loadNextPage()
+                }
+            }
+        })
+
         //При нажатии на весь SearchView, чтобы производился поиск
         searchView.setOnClickListener {
             searchView.isIconified = false

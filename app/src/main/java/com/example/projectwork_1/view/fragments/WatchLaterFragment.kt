@@ -8,7 +8,9 @@ import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import com.example.projectwork_1.databinding.FragmentWatchLaterBinding
 import com.example.projectwork_1.utils.AnimationHelper
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class WatchLaterFragment : Fragment() {
 
     private lateinit var rootWatchLater: FrameLayout

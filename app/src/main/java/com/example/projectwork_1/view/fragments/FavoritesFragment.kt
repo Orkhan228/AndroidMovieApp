@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,15 +19,17 @@ import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import com.example.projectwork_1.viewmodel.FavoritesFragmentViewModel
+import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.getValue
 
+@AndroidEntryPoint
 class FavoritesFragment : Fragment() {
 
     private lateinit var binding: FragmentFavoritesBinding
     private lateinit var rootViewFav: FrameLayout
     private lateinit var adapter: FilmListAdapter
-    private val viewModel by lazy {
-        ViewModelProvider.NewInstanceFactory().create(FavoritesFragmentViewModel::class.java)
-    }
+    private val viewModel: SharedFilmsViewModel by activityViewModels()
     private var favFilmsDataBase = mutableListOf<Film>()
         set(value) {
             if (field == value) return

@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectwork_1.view.activities.MainActivity
@@ -18,9 +18,11 @@ import com.example.projectwork_1.domain.Film
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
-import com.example.projectwork_1.viewmodel.HomeFragmentViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
+import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private lateinit var searchView: SearchView
@@ -28,9 +30,7 @@ class HomeFragment : Fragment() {
     private lateinit var rootView: CoordinatorLayout
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: FilmListAdapter
-    private val viewModel by lazy {
-        ViewModelProvider.NewInstanceFactory().create(HomeFragmentViewModel::class.java)
-    }
+    private val viewModel: SharedFilmsViewModel by activityViewModels()
     private var filmsDataBase = mutableListOf<Film>()
         set(value) {
             if (field == value) return

@@ -12,6 +12,8 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
@@ -19,10 +21,13 @@ import com.example.projectwork_1.utils.ApiConstants
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
 import com.example.projectwork_1.domain.Film
-import com.example.projectwork_1.viewmodel.DetailsFragmentViewModel
+import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.transition.MaterialContainerTransform
+import dagger.hilt.android.AndroidEntryPoint
+import kotlin.getValue
 
+@AndroidEntryPoint
 class DetailsFragment : Fragment() {
 
     private lateinit var detDesc: TextView
@@ -32,9 +37,7 @@ class DetailsFragment : Fragment() {
     private lateinit var coordinatorLay: CoordinatorLayout
     private lateinit var detFabFav: FloatingActionButton
     private lateinit var binding: FragmentDetailsBinding
-    private val viewModel by lazy {
-        ViewModelProvider.NewInstanceFactory().create(DetailsFragmentViewModel::class.java)
-    }
+    private val viewModel: SharedFilmsViewModel by activityViewModels()
     private var favDataBase = mutableListOf<Film>()
         set(value) {
             if (field == value) return

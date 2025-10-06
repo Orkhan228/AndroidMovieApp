@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectwork_1.view.activities.MainActivity
@@ -18,11 +19,11 @@ import com.example.projectwork_1.domain.Film
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
-import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import kotlin.getValue
 
-@AndroidEntryPoint
+
 class HomeFragment : Fragment() {
 
     private lateinit var searchView: SearchView

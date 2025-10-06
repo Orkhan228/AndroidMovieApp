@@ -8,9 +8,8 @@ import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import com.example.projectwork_1.databinding.FragmentCollectionsBinding
 import com.example.projectwork_1.utils.AnimationHelper
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
+
 class CollectionsFragment : Fragment() {
 
     private lateinit var rootViewCollect: FrameLayout

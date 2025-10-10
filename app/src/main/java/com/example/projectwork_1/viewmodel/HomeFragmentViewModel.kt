@@ -7,7 +7,7 @@
 //import com.example.projectwork_1.domain.Film
 //import dagger.hilt.android.lifecycle.HiltViewModel
 //import javax.inject.Inject
-//
+///
 //@HiltViewModel
 //class HomeFragmentViewModel @Inject constructor(private val interactor: AppInteractor) : ViewModel() {
 //    //Создаем здесь список, чтобы добавлять туда наши фильмы, для того чтобы наш список не менялся полностью, а лишь добавлялись новые фильмы

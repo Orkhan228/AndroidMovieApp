@@ -25,13 +25,12 @@ import com.example.projectwork_1.view.fragments.FavoritesFragment
 import com.example.projectwork_1.view.fragments.HomeFragment
 import com.example.projectwork_1.view.fragments.WatchLaterFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import dagger.hilt.android.AndroidEntryPoint
+
 
 private lateinit var mainLayout: ConstraintLayout
 private var lastFragmentTag: String? = null
 private lateinit var bottomNavigationView: BottomNavigationView
 
-@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {

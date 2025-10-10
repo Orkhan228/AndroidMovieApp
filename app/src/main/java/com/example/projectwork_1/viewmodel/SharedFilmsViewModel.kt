@@ -2,15 +2,19 @@ package com.example.projectwork_1.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.projectwork_1.domain.AppInteractor
+import com.example.projectwork_1.App
 import com.example.projectwork_1.domain.Film
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.projectwork_1.domain.Interactor
 import javax.inject.Inject
 
-@HiltViewModel
-class SharedFilmsViewModel @Inject constructor(
-    private val interactor: AppInteractor
-) : ViewModel() {
+class SharedFilmsViewModel @Inject constructor() : ViewModel() {
+
+    @Inject
+    lateinit var interactor: Interactor
+
+    init {
+        App.instance.dagger.inject(this)
+    }
 
     // Все фильмы
     private val allFilms = mutableListOf<Film>()
@@ -24,6 +28,7 @@ class SharedFilmsViewModel @Inject constructor(
     private var isLoading = false
 
     init {
+        App.instance.dagger.inject(this)
         loadPage(currentPage)
     }
 

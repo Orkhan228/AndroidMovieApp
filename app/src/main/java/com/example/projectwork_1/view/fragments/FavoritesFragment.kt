@@ -8,7 +8,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,12 +17,9 @@ import com.example.projectwork_1.domain.Film
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
-import com.example.projectwork_1.viewmodel.FavoritesFragmentViewModel
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
-import dagger.hilt.android.AndroidEntryPoint
 import kotlin.getValue
 
-@AndroidEntryPoint
 class FavoritesFragment : Fragment() {
 
     private lateinit var binding: FragmentFavoritesBinding

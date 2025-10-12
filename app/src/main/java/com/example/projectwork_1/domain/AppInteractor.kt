@@ -7,4 +7,8 @@ interface AppInteractor {
     fun addFavFilmsToDB(film: Film)
     fun removeFavFilmsFromDB(film: Film)
     fun getFilmsFromApi(page: Int, callBack: SharedFilmsViewModel.ApiCallBack)
+    fun saveDefaultCategoryToPreferences(category: String)
+    fun getDefaultCategoryFromPreferences(): String
+    fun saveTheme(theme: String)
+    fun getTheme(): String
 }

@@ -3,6 +3,7 @@ package com.example.projectwork_1.view.activities
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -23,6 +24,7 @@ import com.example.projectwork_1.view.fragments.CollectionsFragment
 import com.example.projectwork_1.view.fragments.DetailsFragment
 import com.example.projectwork_1.view.fragments.FavoritesFragment
 import com.example.projectwork_1.view.fragments.HomeFragment
+import com.example.projectwork_1.view.fragments.SettingsFragment
 import com.example.projectwork_1.view.fragments.WatchLaterFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         //мы сами их сделаем
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowCompat.setDecorFitsSystemWindows(window, false)
+
         }
         //Если меньше 30, то система сама настраивает отступы
         else {
@@ -215,6 +218,14 @@ class MainActivity : AppCompatActivity() {
                     val tag = "mainMenu"
                     val fragment = checkFragmentExistence(tag)
                     changeFragment(fragment ?: HomeFragment(), tag)
+
+                    true
+                }
+
+                R.id.settings -> {
+                    val tag = "settings"
+                    val fragment = checkFragmentExistence(tag)
+                    changeFragment(fragment ?: SettingsFragment(), tag)
 
                     true
                 }

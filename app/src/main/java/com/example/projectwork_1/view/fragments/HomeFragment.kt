@@ -1,5 +1,7 @@
 package com.example.projectwork_1.view.fragments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -31,6 +33,8 @@ class HomeFragment : Fragment() {
     private lateinit var rootView: CoordinatorLayout
     private lateinit var binding: FragmentHomeBinding
     private lateinit var adapter: FilmListAdapter
+    private lateinit var sharedPref: SharedPreferences
+    private lateinit var listener: SharedPreferences.OnSharedPreferenceChangeListener
     private val viewModel: SharedFilmsViewModel by activityViewModels()
     private var filmsDataBase = mutableListOf<Film>()
         set(value) {
@@ -54,22 +58,25 @@ class HomeFragment : Fragment() {
         searchView = binding.searchView
         rootView = binding.homeFragmentRoot
 
-        viewModel.filmsListLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
-            filmsDataBase = it.toMutableList()
-        })
-
         adapter = FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
             //При клике мы открываем фрагмент с деталями, передаем туда фильм на который мы нажали, и изображение
             override fun click(film: Film, posterView: ImageView) {
                 (requireActivity() as MainActivity).launchDetFragment(film, posterView)
             }
         })
+
+        viewModel.filmsListLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
+            filmsDataBase = it.toMutableList()
+            adapter.addItems(it as MutableList<Film>)
+        })
+
         recyclerView?.adapter = adapter
         recyclerView?.layoutManager = LinearLayoutManager(requireActivity())
         val decorator = FilmListItemDecor(8)
         recyclerView?.addItemDecoration(decorator)
 
-        adapter.addItems(filmsDataBase)
+
+        initPullRefresh()
 
         //добавляем слушатель на скролл ресайлер вью
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -120,6 +127,48 @@ class HomeFragment : Fragment() {
             }
         })
         AnimationHelper.performFragmentCircularRevealAnimation(rootView, requireActivity(), 1)
+
+        //Задание со звездочкой
+        listener = object : SharedPreferences.OnSharedPreferenceChangeListener {
+            override fun onSharedPreferenceChanged(
+                sharedPreferences: SharedPreferences?,
+                key: String?,
+            ) {
+                when (key) {
+                    KEY_DEFAULT_CATEGORY -> refreshHomeFragment()
+                }
+            }
+        }
+
+        sharedPref = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+        //регаем наш слушатель
+        sharedPref.registerOnSharedPreferenceChangeListener(listener)
+
+    }
+
+
+    //В этом методе убираем слушатель, чтобы он не занимал память просто так
+    override fun onPause() {
+        super.onPause()
+
+        sharedPref.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
+    //Обычное задание
+    private fun initPullRefresh() {
+        binding.pullToRefresh.setOnRefreshListener {
+            refreshHomeFragment()
+            binding.pullToRefresh.isRefreshing = false
+        }
+    }
+
+    //В этом методе мы очищаем
+    private fun refreshHomeFragment() {
+        viewModel.getFilms()
+    }
+
+    companion object {
+        private const val KEY_DEFAULT_CATEGORY = "default_category"
     }
 }
 

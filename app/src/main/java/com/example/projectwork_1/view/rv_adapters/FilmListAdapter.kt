@@ -16,6 +16,15 @@ class FilmListAdapter(private val clickListener: OnItemClickListener) :
     //текущий список фильмов, который отображается в RecyclerView
     private var items = mutableListOf<Film>()
 
+    //В пошаговом решении этот метод был нужен, но в моем проекте нет, так как у меня во вью модел в методе
+    //PutCategoryProperty() очищается список allFilms и filmsListLiveData подписан на него, получается при изменении списка allFilms
+    //те кто подписаны на filmsListLiveData сразу получают изменения
+
+//    fun clearItems() {
+//        items.clear()
+//        notifyDataSetChanged()
+//    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,

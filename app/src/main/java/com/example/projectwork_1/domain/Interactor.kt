@@ -33,8 +33,11 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
                     call: Call<TmdbResultsDTO?>,
                     response: Response<TmdbResultsDTO?>,
                 ) {
-                    callBack.onSuccess(Converter.convertApiListToDtoList(response.body()?.tmdbFilms))
-
+                    val list = Converter.convertApiListToDtoList(response.body()?.tmdbFilms)
+                    list.forEach {
+                        mainRepo.putToDb(it)
+                    }
+                    callBack.onSuccess(list)
                 }
 
                 override fun onFailure(
@@ -42,7 +45,6 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
                     t: Throwable,
                 ) {
                     callBack.onFailure()
-
                 }
 
             })
@@ -63,4 +65,20 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
 
     //метод для взятия темы из SharedPreferences
     override fun getTheme(): String = preference.getTheme()
+
+    //методы для работы с базой данных
+    override fun getFilmsFromDb(): List<Film> = mainRepo.getAllFromDb()
+
+    //метод для обновления базы данных по айди и фильму, фильм нужен для передачи нового измененного фильма
+    override fun updateDb(id: Int, film: Film) {
+        mainRepo.updateDb(id, film)
+    }
+
+    //удаляет фильм из БД по айди
+    override fun deleteFilmFromDb(id: Int) {
+        mainRepo.deleteFilmFromDb(id)
+    }
+
+    //выдает список фильмов с высокоим рейтингом
+    override fun getWellRatedFilmsFromDb(): List<Film> = mainRepo.getWellRatedFilms()
 }

@@ -75,7 +75,7 @@ class HomeFragment : Fragment() {
         val decorator = FilmListItemDecor(8)
         recyclerView?.addItemDecoration(decorator)
 
-
+        //инициализируем обновление экрана
         initPullRefresh()
 
         //добавляем слушатель на скролл ресайлер вью
@@ -157,7 +157,8 @@ class HomeFragment : Fragment() {
     //Обычное задание
     private fun initPullRefresh() {
         binding.pullToRefresh.setOnRefreshListener {
-            refreshHomeFragment()
+            viewModel.setShowOnlyWellRated(true)
+            viewModel.showWellRatedFilmsFromDb()
             binding.pullToRefresh.isRefreshing = false
         }
     }

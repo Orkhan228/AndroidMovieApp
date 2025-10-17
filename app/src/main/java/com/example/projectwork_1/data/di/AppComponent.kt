@@ -1,6 +1,5 @@
 package com.example.projectwork_1.data.di
 
-import android.app.Application
 import android.content.Context
 import com.example.projectwork_1.App
 import com.example.projectwork_1.data.di.modules.DatabaseModule

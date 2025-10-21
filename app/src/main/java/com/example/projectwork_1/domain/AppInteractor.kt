@@ -11,4 +11,8 @@ interface AppInteractor {
     fun getDefaultCategoryFromPreferences(): String
     fun saveTheme(theme: String)
     fun getTheme(): String
+    fun getFilmsFromDb(): List<Film>
+    fun updateDb(id: Int, film: Film)
+    fun deleteFilmFromDb(id: Int)
+    fun getWellRatedFilmsFromDb(): List<Film>
 }

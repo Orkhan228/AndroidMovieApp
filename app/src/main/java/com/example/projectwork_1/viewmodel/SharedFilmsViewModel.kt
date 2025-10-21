@@ -24,6 +24,8 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     private var currentPage = 1
     private var isLoading = false
+    //переменная - флаг, для того чтобы знать показывать все фильмы или нет
+    private var showOnlyWellRated = false
 
     init {
         App.instance.dagger.inject(this)
@@ -55,8 +57,18 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
                 currentPage++
                 isLoading = false
             }
-
+            //в этом методе, когда у нас не работает сеть, выполняется код
             override fun onFailure() {
+                val films = if (showOnlyWellRated) {
+                    interactor.getWellRatedFilmsFromDb()
+                } else {
+                    interactor.getFilmsFromDb()
+                }
+                filmsListLiveData.postValue(films)
+
+                //Логирование для проверки работы базы данных из кэша
+                //println("!!! Using database as cash")
+                showOnlyWellRated = false
                 isLoading = false
             }
         })
@@ -102,7 +114,6 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     }
 
     //Settings ViewModel
-
     //метод, который изменяет значения нашего наблюдаемого списка
     private fun getCategoryProperty() {
         categoryPropertyLiveData.postValue(interactor.getDefaultCategoryFromPreferences())
@@ -122,5 +133,21 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     fun setTheme(theme: String) {
         interactor.saveTheme(theme)
         themeLiveData.value = theme
+    }
+
+    //Дополнительные методы для взаимодействия с БД
+    fun getWellRatedFilmsFromDb(): List<Film> = interactor.getWellRatedFilmsFromDb()
+    //метод для показа фильмов с высоким рейтингом, сначала очищаем все фильмы, потом получаем фильмы с высоким рейтингом, добавляем
+    //фильмы с высоким рейтингом в allFilms и уведомляем подписчиков об этом
+    fun showWellRatedFilmsFromDb() {
+        allFilms.clear()
+        val filtered = getWellRatedFilmsFromDb()
+        allFilms.addAll(filtered)
+        filmsListLiveData.postValue(filtered)
+    }
+
+    //метод для изменения значения флага
+    fun setShowOnlyWellRated(enabled: Boolean) {
+        showOnlyWellRated = enabled
     }
 }

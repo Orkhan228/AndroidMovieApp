@@ -38,6 +38,14 @@ class PreferenceProvider @Inject constructor(context: Context) : AppPreferencePr
 
     override fun getTheme(): String = preference.getString(KEY_APP_THEME, THEME_LIGHT) ?: THEME_LIGHT
 
+
+    override fun saveUpdateTime(currentTime: Long) {
+        preference.edit { putLong(KEY_LAST_UPDATE, currentTime) }
+    }
+
+    override fun getLastUpdateTime(): Long = preference.getLong(KEY_LAST_UPDATE, UPDATE_DEFAULT)
+
+
     companion object {
         private const val KEY_FIRST_LAUNCH = "first_launch"
         private const val KEY_DEFAULT_CATEGORY = "default_category"
@@ -46,5 +54,8 @@ class PreferenceProvider @Inject constructor(context: Context) : AppPreferencePr
         private const val KEY_APP_THEME = "app_theme"
         private const val THEME_LIGHT = "light"
         private const val THEME_DARK = "dark"
+
+        private const val KEY_LAST_UPDATE = "last_update"
+        private const val UPDATE_DEFAULT = 0L
     }
 }

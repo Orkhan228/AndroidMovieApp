@@ -3,7 +3,7 @@
 //import androidx.lifecycle.MutableLiveData
 //import androidx.lifecycle.ViewModel
 //import com.example.projectwork_1.domain.AppInteractor
-//import com.example.projectwork_1.domain.Film
+//import com.example.projectwork_1.data.entity.Film
 //
 //import javax.inject.Inject
 //

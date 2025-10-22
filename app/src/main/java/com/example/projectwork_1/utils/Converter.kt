@@ -1,7 +1,7 @@
 package com.example.projectwork_1.utils
 
 import com.example.projectwork_1.data.entity.TmdbFilm
-import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.data.entity.Film
 
 object Converter {
     fun convertApiListToDtoList(list: List<TmdbFilm>?) : List<Film> {

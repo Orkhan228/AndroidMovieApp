@@ -7,7 +7,7 @@ import com.bumptech.glide.Glide
 import com.example.projectwork_1.utils.ApiConstants
 import com.example.projectwork_1.App
 import com.example.projectwork_1.databinding.FilmItemBinding
-import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.data.entity.Film
 
 class FilmViewHolder(bindingRecycler: FilmItemBinding) : RecyclerView.ViewHolder(bindingRecycler.root) {
 

@@ -1,16 +1,20 @@
 package com.example.projectwork_1.viewmodel
 
+import android.content.SharedPreferences
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.projectwork_1.App
-import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.domain.Interactor
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     @Inject
     lateinit var interactor: Interactor
+
 
     //Settings ViewModel
     //создаем наблюдаемый список, который хранит категории
@@ -21,7 +25,9 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     //новая страница, при изменении категории
     private val newPage = 1
+    private val tenMinutes = 10 * 60 * 1000L
 
+    private var currentTime: Long = 0
     private var currentPage = 1
     private var isLoading = false
     //переменная - флаг, для того чтобы знать показывать все фильмы или нет
@@ -54,42 +60,54 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
             override fun onSuccess(films: List<Film>) {
                 allFilms.addAll(films)
                 filmsListLiveData.postValue(allFilms.toList())
+                //сохраняем время последней успешной загрузки
+                interactor.saveUpdateTime(System.currentTimeMillis())
                 currentPage++
                 isLoading = false
+                //println("!!! OnSuccess")
             }
             //в этом методе, когда у нас не работает сеть, выполняется код
             override fun onFailure() {
-                val films = if (showOnlyWellRated) {
-                    interactor.getWellRatedFilmsFromDb()
-                } else {
-                    interactor.getFilmsFromDb()
-                }
-                filmsListLiveData.postValue(films)
-
-                //Логирование для проверки работы базы данных из кэша
-                //println("!!! Using database as cash")
-                showOnlyWellRated = false
-                isLoading = false
-            }
-        })
-    }
-
-    fun getFilms() {
-        interactor.getFilmsFromApi(newPage, object : ApiCallBack {
-            override fun onSuccess(films: List<Film>) {
-                //добавляем ко всем фильмам, чтобы загрузка была как положенная, то есть не просто список заменялся, а добавлялись новые фильмы
-                allFilms.addAll(films)
-                filmsListLiveData.postValue(allFilms.toList())
-                isLoading = false
-            }
-
-            override fun onFailure() {
-                isLoading = false
+                //println("!!! problems with net, using database as cash")
+                //когда, происходит ошибка в сети, выполняется этот метод
+                filmsLogic()
             }
         })
     }
 
     fun loadNextPage() = loadPage(currentPage)
+
+    //метод новый логики загрузки фильмов из бд
+    fun filmsLogic() {
+        //берем время последней успешной загрузки
+        val lastUpdateTime = interactor.getLastUpdateTime()
+        //записываем текущее время
+        currentTime = System.currentTimeMillis()
+        //println("!!! Films logic")
+
+        //тут в условии проверяем, если разница меньше или равна 10 минутам, то запускаем отдельный поток, в котором используем данные
+        //из бд и ставим их в наш обозреваемый список, а также меняем флаг isLoading на false
+        if (currentTime - lastUpdateTime <= tenMinutes) {
+            //println("!!! Using cached data (less than 10 minutes old)")
+            Executors.newSingleThreadExecutor().execute {
+                filmsListLiveData.postValue(interactor.getFilmsFromDb())
+                isLoading = false
+            }
+        }
+        //если прошло больше 10 минут, то данные устарели, вызываем метод удаления записей из бд, очищаем список, уведомляем наш список
+        //изменяем флаг isLoading на false, сбрасываем счетчик страниц, так как фильмы мы удалили и вызываем метод loadPage, который делает новый запрос
+        else {
+            Executors.newSingleThreadExecutor().execute {
+                //println("!!! delete and refresh")
+                interactor.deleteFilmsFromDB(allFilms)
+                allFilms.clear()
+                filmsListLiveData.postValue(allFilms)
+                isLoading = false
+                currentPage = 1
+                loadPage(currentPage)
+            }
+        }
+    }
 
     fun addToFavorites(film: Film) {
         if (!favFilms.contains(film)) {
@@ -127,27 +145,12 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         getCategoryProperty()
         allFilms.clear()
         currentPage = 1
+        loadPage(currentPage)
     }
 
     //метод для изменения темы, также после изменения мы уведомляем наш наблюдаемый список
     fun setTheme(theme: String) {
         interactor.saveTheme(theme)
         themeLiveData.value = theme
-    }
-
-    //Дополнительные методы для взаимодействия с БД
-    fun getWellRatedFilmsFromDb(): List<Film> = interactor.getWellRatedFilmsFromDb()
-    //метод для показа фильмов с высоким рейтингом, сначала очищаем все фильмы, потом получаем фильмы с высоким рейтингом, добавляем
-    //фильмы с высоким рейтингом в allFilms и уведомляем подписчиков об этом
-    fun showWellRatedFilmsFromDb() {
-        allFilms.clear()
-        val filtered = getWellRatedFilmsFromDb()
-        allFilms.addAll(filtered)
-        filmsListLiveData.postValue(filtered)
-    }
-
-    //метод для изменения значения флага
-    fun setShowOnlyWellRated(enabled: Boolean) {
-        showOnlyWellRated = enabled
     }
 }

@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.databinding.FragmentHomeBinding
-import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
@@ -143,7 +143,6 @@ class HomeFragment : Fragment() {
         sharedPref = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
         //регаем наш слушатель
         sharedPref.registerOnSharedPreferenceChangeListener(listener)
-
     }
 
 
@@ -157,15 +156,14 @@ class HomeFragment : Fragment() {
     //Обычное задание
     private fun initPullRefresh() {
         binding.pullToRefresh.setOnRefreshListener {
-            viewModel.setShowOnlyWellRated(true)
-            viewModel.showWellRatedFilmsFromDb()
+            refreshHomeFragment()
             binding.pullToRefresh.isRefreshing = false
         }
     }
 
     //В этом методе мы очищаем
     private fun refreshHomeFragment() {
-        viewModel.getFilms()
+        viewModel.filmsLogic()
     }
 
     companion object {

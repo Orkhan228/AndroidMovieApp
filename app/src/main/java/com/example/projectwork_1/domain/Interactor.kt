@@ -1,6 +1,7 @@
 package com.example.projectwork_1.domain
 
 import com.example.projectwork_1.data.AppRepository
+import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.utils.API
 import com.example.projectwork_1.data.entity.TmdbResultsDTO
 import com.example.projectwork_1.data.sharedPref.AppPreferenceProvider
@@ -34,9 +35,7 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
                     response: Response<TmdbResultsDTO?>,
                 ) {
                     val list = Converter.convertApiListToDtoList(response.body()?.tmdbFilms)
-                    list.forEach {
-                        mainRepo.putToDb(it)
-                    }
+                    mainRepo.putToDb(list)
                     callBack.onSuccess(list)
                 }
 
@@ -69,16 +68,26 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
     //методы для работы с базой данных
     override fun getFilmsFromDb(): List<Film> = mainRepo.getAllFromDb()
 
-    //метод для обновления базы данных по айди и фильму, фильм нужен для передачи нового измененного фильма
-    override fun updateDb(id: Int, film: Film) {
-        mainRepo.updateDb(id, film)
+    override fun saveUpdateTime(time: Long) {
+        preference.saveUpdateTime(time)
     }
+
+    override fun getLastUpdateTime(): Long = preference.getLastUpdateTime()
+
+    override fun deleteFilmsFromDB(films: List<Film>) {
+        mainRepo.deleteFilmsFromDb(films)
+    }
+
+    //метод для обновления базы данных по айди и фильму, фильм нужен для передачи нового измененного фильма
+//    override fun updateDb(id: Int, film: Film) {
+//        mainRepo.updateDb(id, film)
+//    }
 
     //удаляет фильм из БД по айди
-    override fun deleteFilmFromDb(id: Int) {
-        mainRepo.deleteFilmFromDb(id)
-    }
+//    override fun deleteFilmFromDb(id: Int) {
+//        mainRepo.deleteFilmFromDb(id)
+//    }
 
-    //выдает список фильмов с высокоим рейтингом
-    override fun getWellRatedFilmsFromDb(): List<Film> = mainRepo.getWellRatedFilms()
+//    //выдает список фильмов с высокоим рейтингом
+//    override fun getWellRatedFilmsFromDb(): List<Film> = mainRepo.getWellRatedFilms()
 }

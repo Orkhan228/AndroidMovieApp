@@ -11,4 +11,6 @@ interface AppPreferenceProvider {
     fun getDefaultCategory(): String
     fun saveTheme(theme: String)
     fun getTheme(): String
+    fun saveUpdateTime(currentTime: Long)
+    fun getLastUpdateTime(): Long
 }

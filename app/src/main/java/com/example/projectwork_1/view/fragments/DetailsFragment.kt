@@ -18,7 +18,7 @@ import com.bumptech.glide.Glide
 import com.example.projectwork_1.utils.ApiConstants
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
-import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.transition.MaterialContainerTransform

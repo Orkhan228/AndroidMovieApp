@@ -6,7 +6,7 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectwork_1.databinding.FilmItemBinding
-import com.example.projectwork_1.domain.Film
+import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.utils.FilmDiffUtil
 import com.example.projectwork_1.view.rv_viewholders.FilmViewHolder
 

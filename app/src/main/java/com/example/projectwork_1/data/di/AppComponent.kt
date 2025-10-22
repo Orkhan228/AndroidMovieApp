@@ -11,7 +11,7 @@ import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [DatabaseModule::class, DomainModule::class, RemoteModule::class])
+@Component(modules = [DatabaseModule::class, DomainModule::class, RemoteModule::class, DatabaseModule.BindModule::class])
 interface AppComponent {
 
     @Component.Builder

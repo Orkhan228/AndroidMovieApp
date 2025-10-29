@@ -1,5 +1,6 @@
 package com.example.projectwork_1.domain
 
+import androidx.lifecycle.LiveData
 import com.example.projectwork_1.data.AppRepository
 import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.utils.API
@@ -36,7 +37,7 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
                 ) {
                     val list = Converter.convertApiListToDtoList(response.body()?.tmdbFilms)
                     mainRepo.putToDb(list)
-                    callBack.onSuccess(list)
+                    callBack.onSuccess()
                 }
 
                 override fun onFailure(
@@ -66,7 +67,7 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
     override fun getTheme(): String = preference.getTheme()
 
     //методы для работы с базой данных
-    override fun getFilmsFromDb(): List<Film> = mainRepo.getAllFromDb()
+    override fun getFilmsFromDb(): LiveData<List<Film>> = mainRepo.getAllFromDb()
 
     override fun saveUpdateTime(time: Long) {
         preference.saveUpdateTime(time)
@@ -74,20 +75,8 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
 
     override fun getLastUpdateTime(): Long = preference.getLastUpdateTime()
 
-    override fun deleteFilmsFromDB(films: List<Film>) {
-        mainRepo.deleteFilmsFromDb(films)
+    override fun deleteFilmsFromDB() {
+        mainRepo.deleteFilmsFromDb()
     }
 
-    //метод для обновления базы данных по айди и фильму, фильм нужен для передачи нового измененного фильма
-//    override fun updateDb(id: Int, film: Film) {
-//        mainRepo.updateDb(id, film)
-//    }
-
-    //удаляет фильм из БД по айди
-//    override fun deleteFilmFromDb(id: Int) {
-//        mainRepo.deleteFilmFromDb(id)
-//    }
-
-//    //выдает список фильмов с высокоим рейтингом
-//    override fun getWellRatedFilmsFromDb(): List<Film> = mainRepo.getWellRatedFilms()
 }

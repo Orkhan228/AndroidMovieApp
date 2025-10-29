@@ -1,12 +1,12 @@
 package com.example.projectwork_1.viewmodel
 
-import android.content.SharedPreferences
-import android.widget.Toast
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.projectwork_1.App
 import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.domain.Interactor
+import com.example.projectwork_1.utils.SingleLiveEvent
 import java.util.concurrent.Executors
 import javax.inject.Inject
 
@@ -15,7 +15,6 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     @Inject
     lateinit var interactor: Interactor
 
-
     //Settings ViewModel
     //создаем наблюдаемый список, который хранит категории
     val categoryPropertyLiveData: MutableLiveData<String> = MutableLiveData()
@@ -23,8 +22,11 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     //создаем наблюдаемый список, который хранит стили темы
     val themeLiveData: MutableLiveData<String> = MutableLiveData()
 
-    //новая страница, при изменении категории
-    private val newPage = 1
+    //создаем livedata для показа progressBar
+    val showProgressBar = MutableLiveData<Boolean>()
+
+    val showErrorData = SingleLiveEvent<String>()
+
     private val tenMinutes = 10 * 60 * 1000L
 
     private var currentTime: Long = 0
@@ -33,8 +35,16 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     //переменная - флаг, для того чтобы знать показывать все фильмы или нет
     private var showOnlyWellRated = false
 
+    // Все фильмы
+    val filmsListLiveData: LiveData<List<Film>>
+
+    // Избранные фильмы
+    private val favFilms = mutableListOf<Film>()
+    val favFilmsLiveData = MutableLiveData<List<Film>>()
+
     init {
         App.instance.dagger.inject(this)
+        filmsListLiveData = interactor.getFilmsFromDb()
         loadPage(currentPage)
         //вызываем метод, описанный ниже, чтобы положить значение в categoryPropertyLiveData, при создании экземпляра,
         //чтобы при первом запуске, были отмечены кнопки в SettingsFragment
@@ -43,33 +53,27 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         themeLiveData.value = interactor.getTheme()
     }
 
-    // Все фильмы
-    private val allFilms = mutableListOf<Film>()
-    val filmsListLiveData = MutableLiveData<List<Film>>()
-
-    // Избранные фильмы
-    private val favFilms = mutableListOf<Film>()
-    val favFilmsLiveData = MutableLiveData<List<Film>>()
-
 
     fun loadPage(page: Int) {
         if (isLoading) return
         isLoading = true
+        showProgressBar.postValue(true)
 
         interactor.getFilmsFromApi(page, object : ApiCallBack {
-            override fun onSuccess(films: List<Film>) {
-                allFilms.addAll(films)
-                filmsListLiveData.postValue(allFilms.toList())
+            override fun onSuccess() {
                 //сохраняем время последней успешной загрузки
                 interactor.saveUpdateTime(System.currentTimeMillis())
                 currentPage++
                 isLoading = false
+                showProgressBar.postValue(false)
                 //println("!!! OnSuccess")
             }
             //в этом методе, когда у нас не работает сеть, выполняется код
             override fun onFailure() {
                 //println("!!! problems with net, using database as cash")
                 //когда, происходит ошибка в сети, выполняется этот метод
+                showProgressBar.postValue(false)
+                showErrorData.postValue("An error occurred, please check your connection!")
                 filmsLogic()
             }
         })
@@ -90,7 +94,6 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         if (currentTime - lastUpdateTime <= tenMinutes) {
             //println("!!! Using cached data (less than 10 minutes old)")
             Executors.newSingleThreadExecutor().execute {
-                filmsListLiveData.postValue(interactor.getFilmsFromDb())
                 isLoading = false
             }
         }
@@ -99,9 +102,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         else {
             Executors.newSingleThreadExecutor().execute {
                 //println("!!! delete and refresh")
-                interactor.deleteFilmsFromDB(allFilms)
-                allFilms.clear()
-                filmsListLiveData.postValue(allFilms)
+                interactor.deleteFilmsFromDB()
                 isLoading = false
                 currentPage = 1
                 loadPage(currentPage)
@@ -113,7 +114,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         if (!favFilms.contains(film)) {
             favFilms.add(film)
             film.isInFavorites = true
-            favFilmsLiveData.postValue(favFilms.toList())
+            favFilmsLiveData.postValue(favFilms)
         }
     }
 
@@ -127,7 +128,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     //интерфейс для метода getFilmsFromApi() из интерактора, там мы передаем список фильмов, а тут мы пишем реализацию этого интерфейса
     interface ApiCallBack {
-        fun onSuccess(films: List<Film>)
+        fun onSuccess()
         fun onFailure()
     }
 
@@ -143,7 +144,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     fun putCategoryProperty(category: String) {
         interactor.saveDefaultCategoryToPreferences(category)
         getCategoryProperty()
-        allFilms.clear()
+        interactor.deleteFilmsFromDB()
         currentPage = 1
         loadPage(currentPage)
     }
@@ -153,4 +154,6 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         interactor.saveTheme(theme)
         themeLiveData.value = theme
     }
+
+
 }

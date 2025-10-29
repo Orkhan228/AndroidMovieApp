@@ -1,5 +1,6 @@
 package com.example.projectwork_1.data.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -11,12 +12,12 @@ import com.example.projectwork_1.data.entity.Film
 interface FilmDao {
 
     @Query("SELECT * FROM cached_films")
-    fun getCachedFilms(): List<Film>
+    fun getCachedFilms(): LiveData<List<Film>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAllToDb(films: List<Film>)
 
-    @Delete
-    fun deleteAllFilmsFromDB(films: List<Film>)
+    @Query("DELETE FROM cached_films")
+    fun deleteAllFilmsFromDB()
 
 }

@@ -8,11 +8,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projectwork_1.view.activities.MainActivity
@@ -23,6 +26,7 @@ import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import java.util.Locale
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlin.getValue
 
 
@@ -68,6 +72,14 @@ class HomeFragment : Fragment() {
         viewModel.filmsListLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
             filmsDataBase = it.toMutableList()
             adapter.addItems(it as MutableList<Film>)
+        })
+
+        viewModel.showProgressBar.observe(viewLifecycleOwner, Observer<Boolean> {
+            binding.progressBar.isVisible = it
+        })
+
+        viewModel.showErrorData.observe(viewLifecycleOwner, Observer<String> {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
         })
 
         recyclerView?.adapter = adapter

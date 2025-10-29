@@ -80,7 +80,9 @@ dependencies {
     //Внедрение Dagger2
     implementation("com.google.dagger:dagger:2.52")
     kapt("com.google.dagger:dagger-compiler:2.52")
-    implementation("androidx.fragment:fragment-ktx:1.6.0") //для activityViewModels
+
+    //для activityViewModels
+    implementation("androidx.fragment:fragment-ktx:1.6.0")
 
     //Swipe refresh layout dependency
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")

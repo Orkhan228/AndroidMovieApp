@@ -1,5 +1,6 @@
 package com.example.projectwork_1.domain
 
+import androidx.lifecycle.LiveData
 import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 
@@ -12,11 +13,8 @@ interface AppInteractor {
     fun getDefaultCategoryFromPreferences(): String
     fun saveTheme(theme: String)
     fun getTheme(): String
-    fun getFilmsFromDb(): List<Film>
+    fun getFilmsFromDb(): LiveData<List<Film>>
     fun saveUpdateTime(time: Long)
     fun getLastUpdateTime(): Long
-    fun deleteFilmsFromDB(films: List<Film>)
-//    fun updateDb(id: Int, film: Film)
-//    fun deleteFilmFromDb(id: Int)
-//    fun getWellRatedFilmsFromDb(): List<Film>
+    fun deleteFilmsFromDB()
 }

@@ -10,11 +10,15 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentSettingsBinding
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
     private lateinit var binding: FragmentSettingsBinding
@@ -43,21 +47,29 @@ class SettingsFragment : Fragment() {
         //подписываемся на наши обозреваемы данные, именно на наш список, который хранит категории, тут viewLifecycleOwner -
         //нужен, чтобы наблюдатель автоматически снимался, когда фрагмент уничтожается, предотвращая утечки памяти и Observer<String> -
         //это лямбда, которая вызывается каждый раз, когда значение categoryPropertyLiveData меняется
-        viewModel.categoryPropertyLiveData.observe(viewLifecycleOwner, Observer<String> {
-            //Тут мы проверяем, какая категория была добавлена, то кнопку, которая соответствует добавленной категории необходимо выбрать
-            when (it) {
-                CATEGORY_POPULAR -> binding.radioPopular.isChecked = true
-                CATEGORY_TOP_RATED -> binding.radioTopRated.isChecked = true
-                CATEGORY_SOON -> binding.radioSoon.isChecked = true
-                CATEGORY_NOW_PLAYING -> binding.radioNowPlaying.isChecked = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.categoryPropertyFlow.collect {
+                    //Тут мы проверяем, какая категория была добавлена, то кнопку, которая соответствует добавленной категории необходимо выбрать
+                    when (it) {
+                        CATEGORY_POPULAR -> binding.radioPopular.isChecked = true
+                        CATEGORY_TOP_RATED -> binding.radioTopRated.isChecked = true
+                        CATEGORY_SOON -> binding.radioSoon.isChecked = true
+                        CATEGORY_NOW_PLAYING -> binding.radioNowPlaying.isChecked = true
+                    }
+                }
             }
-        })
+        }
 
         //подписываемся на наш наблюдаемый список, и при каждом изменении списка, выполняется код в лямбде
-        viewModel.themeLiveData.observe(viewLifecycleOwner) { theme ->
-            when (theme) {
-                THEME_DARK -> binding.radioDark.isChecked = true
-                THEME_LIGHT -> binding.radioLight.isChecked = true
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.themeFlowData.collect { theme ->
+                    when (theme) {
+                        THEME_DARK -> binding.radioDark.isChecked = true
+                        THEME_LIGHT -> binding.radioLight.isChecked = true
+                    }
+                }
             }
         }
 

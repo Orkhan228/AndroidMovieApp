@@ -17,5 +17,8 @@
     <string name="settings_title">Choose app theme:</string>
     <string name="radio_button_light_theme">Light Theme</string>
     <string name="radio_button_dark_theme">Dark Theme</string>
+    <string name="permission_storage">No permission. Please grant permission.</string>
+    <string name="downloaded_to_gallery">Saved to gallery</string>
+    <string name="open">To gallery</string>
 
 </resources>

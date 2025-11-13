@@ -1,14 +1,30 @@
 package com.example.projectwork_1.viewmodel
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.projectwork_1.App
 import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.domain.Interactor
 import com.example.projectwork_1.utils.SingleLiveEvent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.http.Url
+import java.net.URL
 import java.util.concurrent.Executors
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
@@ -17,13 +33,13 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     //Settings ViewModel
     //создаем наблюдаемый список, который хранит категории
-    val categoryPropertyLiveData: MutableLiveData<String> = MutableLiveData()
+    val categoryPropertyFlow = MutableStateFlow<String>("")
 
     //создаем наблюдаемый список, который хранит стили темы
-    val themeLiveData: MutableLiveData<String> = MutableLiveData()
+    val themeFlowData = MutableStateFlow<String>("")
 
     //создаем livedata для показа progressBar
-    val showProgressBar = MutableLiveData<Boolean>()
+    val showProgressBarFlow = MutableStateFlow<Boolean>(false)
 
     val showErrorData = SingleLiveEvent<String>()
 
@@ -32,51 +48,60 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     private var currentTime: Long = 0
     private var currentPage = 1
     private var isLoading = false
-    //переменная - флаг, для того чтобы знать показывать все фильмы или нет
-    private var showOnlyWellRated = false
+    private var lastLoadFailed = false
 
     // Все фильмы
-    val filmsListLiveData: LiveData<List<Film>>
+    val filmsListFlowData: Flow<List<Film>>
 
     // Избранные фильмы
     private val favFilms = mutableListOf<Film>()
-    val favFilmsLiveData = MutableLiveData<List<Film>>()
+    val favFilmsFlowData = MutableStateFlow<List<Film>>(emptyList())
 
     init {
         App.instance.dagger.inject(this)
-        filmsListLiveData = interactor.getFilmsFromDb()
+        filmsListFlowData = interactor.getFilmsFromDb()
         loadPage(currentPage)
         //вызываем метод, описанный ниже, чтобы положить значение в categoryPropertyLiveData, при создании экземпляра,
         //чтобы при первом запуске, были отмечены кнопки в SettingsFragment
         getCategoryProperty()
         //в этом блоке ставим значение в наш наблюдаемый список, чтобы при первом запуске была уже выбранная тема в радио кнопках
-        themeLiveData.value = interactor.getTheme()
+        themeFlowData.value = interactor.getTheme()
     }
 
 
     fun loadPage(page: Int) {
         if (isLoading) return
         isLoading = true
-        showProgressBar.postValue(true)
 
-        interactor.getFilmsFromApi(page, object : ApiCallBack {
-            override fun onSuccess() {
-                //сохраняем время последней успешной загрузки
-                interactor.saveUpdateTime(System.currentTimeMillis())
-                currentPage++
-                isLoading = false
-                showProgressBar.postValue(false)
-                //println("!!! OnSuccess")
+        if (!lastLoadFailed) {
+            showProgressBarFlow.value = true
+        }
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                interactor.getFilmsFromApi(page, object : ApiCallBack {
+                    override fun onSuccess() {
+                        //сохраняем время последней успешной загрузки
+                        interactor.saveUpdateTime(System.currentTimeMillis())
+                        currentPage++
+                        isLoading = false
+                        lastLoadFailed = false
+                        showProgressBarFlow.value = false
+                    }
+                    //в этом методе, когда у нас не работает сеть, выполняется код
+                    override fun onFailure() {
+                        //когда, происходит ошибка в сети, выполняется этот метод
+                        showProgressBarFlow.value = false
+                        if (!lastLoadFailed) {
+                            showErrorData.postValue("An error occurred, please check your connection!")
+                        }
+                        lastLoadFailed = true
+                        filmsLogic()
+                    }
+                })
             }
-            //в этом методе, когда у нас не работает сеть, выполняется код
-            override fun onFailure() {
-                //println("!!! problems with net, using database as cash")
-                //когда, происходит ошибка в сети, выполняется этот метод
-                showProgressBar.postValue(false)
-                showErrorData.postValue("An error occurred, please check your connection!")
-                filmsLogic()
-            }
-        })
+        }
+
     }
 
     fun loadNextPage() = loadPage(currentPage)
@@ -87,21 +112,16 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         val lastUpdateTime = interactor.getLastUpdateTime()
         //записываем текущее время
         currentTime = System.currentTimeMillis()
-        //println("!!! Films logic")
 
         //тут в условии проверяем, если разница меньше или равна 10 минутам, то запускаем отдельный поток, в котором используем данные
         //из бд и ставим их в наш обозреваемый список, а также меняем флаг isLoading на false
         if (currentTime - lastUpdateTime <= tenMinutes) {
-            //println("!!! Using cached data (less than 10 minutes old)")
-            Executors.newSingleThreadExecutor().execute {
-                isLoading = false
-            }
+            isLoading = false
         }
         //если прошло больше 10 минут, то данные устарели, вызываем метод удаления записей из бд, очищаем список, уведомляем наш список
         //изменяем флаг isLoading на false, сбрасываем счетчик страниц, так как фильмы мы удалили и вызываем метод loadPage, который делает новый запрос
         else {
-            Executors.newSingleThreadExecutor().execute {
-                //println("!!! delete and refresh")
+            viewModelScope.launch {
                 interactor.deleteFilmsFromDB()
                 isLoading = false
                 currentPage = 1
@@ -114,7 +134,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         if (!favFilms.contains(film)) {
             favFilms.add(film)
             film.isInFavorites = true
-            favFilmsLiveData.postValue(favFilms)
+            favFilmsFlowData.value = favFilms
         }
     }
 
@@ -122,7 +142,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         if (favFilms.contains(film)) {
             favFilms.remove(film)
             film.isInFavorites = false
-            favFilmsLiveData.postValue(favFilms.toList())
+            favFilmsFlowData.value = favFilms.toList()
         }
     }
 
@@ -135,25 +155,47 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     //Settings ViewModel
     //метод, который изменяет значения нашего наблюдаемого списка
     private fun getCategoryProperty() {
-        categoryPropertyLiveData.postValue(interactor.getDefaultCategoryFromPreferences())
+        categoryPropertyFlow.value = interactor.getDefaultCategoryFromPreferences()
     }
 
     //метод, который меняет категорию, после изменения вызывает getCategoryProperty(), который уведомляет подписчиков, а после
     //очищает список всех фильмов, так как категория поменялась нам нужны совсем другие фильмы, также обновляем currentPage, чтобы
     //не сломать логику загрузок новых страниц.
+
     fun putCategoryProperty(category: String) {
-        interactor.saveDefaultCategoryToPreferences(category)
-        getCategoryProperty()
-        interactor.deleteFilmsFromDB()
-        currentPage = 1
-        loadPage(currentPage)
+        viewModelScope.launch {
+            interactor.saveDefaultCategoryToPreferences(category)
+            getCategoryProperty()
+            interactor.deleteFilmsFromDB()
+            currentPage = 1
+            loadPage(currentPage)
+        }
     }
 
     //метод для изменения темы, также после изменения мы уведомляем наш наблюдаемый список
     fun setTheme(theme: String) {
         interactor.saveTheme(theme)
-        themeLiveData.value = theme
+        themeFlowData.value = theme
     }
 
+
+    //DetailsFragment
+    suspend fun loadWallpaper(url: String): Bitmap {
+        return suspendCoroutine {
+            try {
+                val url = URL(url)
+                val bitmap = BitmapFactory.decodeStream(url.openConnection().inputStream)
+                if (bitmap != null) {
+                    it.resume(bitmap)
+                }
+                else {
+                    it.resumeWithException(Exception("Failed to load image!"))
+                }
+            } catch (e: Exception) {
+                it.resumeWithException(e)
+            }
+
+        }
+    }
 
 }

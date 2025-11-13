@@ -9,6 +9,10 @@ import com.example.projectwork_1.data.sharedPref.AppPreferenceProvider
 import com.example.projectwork_1.utils.AppTmdbApi
 import com.example.projectwork_1.utils.Converter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -26,28 +30,34 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
         mainRepo.favoriteFilms.remove(film)
     }
 
-    override fun getFilmsFromApi(page: Int, callBack: SharedFilmsViewModel.ApiCallBack) {
+    override suspend fun getFilmsFromApi(page: Int, callBack: SharedFilmsViewModel.ApiCallBack) {
         //в метод getFilms, необходимо добавить категорию, которую мы добавляем методом getDefaultCategoryFromPreferences(),
         //который описан ниже
-        retrofitService.api.getFilms(getDefaultCategoryFromPreferences(), API.KEY, "ru-RU", page)
-            .enqueue(object : Callback<TmdbResultsDTO> {
-                override fun onResponse(
-                    call: Call<TmdbResultsDTO?>,
-                    response: Response<TmdbResultsDTO?>,
-                ) {
-                    val list = Converter.convertApiListToDtoList(response.body()?.tmdbFilms)
-                    mainRepo.putToDb(list)
-                    callBack.onSuccess()
-                }
-
-                override fun onFailure(
-                    call: Call<TmdbResultsDTO?>,
-                    t: Throwable,
-                ) {
-                    callBack.onFailure()
-                }
-
-            })
+        val response = retrofitService.api.getFilms(
+            getDefaultCategoryFromPreferences(),
+            API.KEY,
+            "ru-RU",
+            page
+        )
+        if (response.isSuccessful) {
+            val list = response.body()?.tmdbFilms?.map {
+                Film(
+                    title = it.title,
+                    poster = it.posterPath,
+                    description = it.overview,
+                    rating = it.voteAverage,
+                    isInFavorites = false
+                )
+            }
+            callBack.onSuccess()
+            withContext(Dispatchers.IO) {
+                mainRepo.putToDb(list.orEmpty())
+            }
+            delay(400)
+        } else {
+            callBack.onFailure()
+            delay(400)
+        }
     }
 
     //Метод чтобы сохранить категорию
@@ -67,7 +77,7 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
     override fun getTheme(): String = preference.getTheme()
 
     //методы для работы с базой данных
-    override fun getFilmsFromDb(): LiveData<List<Film>> = mainRepo.getAllFromDb()
+    override fun getFilmsFromDb(): Flow<List<Film>> = mainRepo.getAllFromDb()
 
     override fun saveUpdateTime(time: Long) {
         preference.saveUpdateTime(time)
@@ -75,8 +85,10 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
 
     override fun getLastUpdateTime(): Long = preference.getLastUpdateTime()
 
-    override fun deleteFilmsFromDB() {
-        mainRepo.deleteFilmsFromDb()
+    override suspend fun deleteFilmsFromDB() {
+        withContext(Dispatchers.IO) {
+            mainRepo.deleteFilmsFromDb()
+        }
     }
 
 }

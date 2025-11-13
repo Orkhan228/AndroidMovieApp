@@ -90,4 +90,7 @@ dependencies {
     //Внедрение Room
     implementation("androidx.room:room-runtime:2.2.6")
     kapt("androidx.room:room-compiler:2.2.6")
+
+    //Внедрения для корутин, чтобы работали с Room-ом
+    implementation("androidx.room:room-ktx:2.2.6")
 }

@@ -8,8 +8,11 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.databinding.FragmentFavoritesBinding
@@ -18,6 +21,7 @@ import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import kotlinx.coroutines.launch
 import kotlin.getValue
 
 class FavoritesFragment : Fragment() {
@@ -47,10 +51,13 @@ class FavoritesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        viewModel.favFilmsLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
-            favFilmsDataBase = it.toMutableList()
-        })
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.favFilmsFlowData.collect {
+                    favFilmsDataBase = it.toMutableList()
+                }
+            }
+        }
 
         rootViewFav = binding.favRoot
 

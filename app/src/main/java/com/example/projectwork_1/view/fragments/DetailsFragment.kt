@@ -1,8 +1,14 @@
 package com.example.projectwork_1.view.fragments
 
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +17,15 @@ import android.widget.Toast
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
 import com.example.projectwork_1.utils.ApiConstants
 import com.example.projectwork_1.R
@@ -21,7 +33,14 @@ import com.example.projectwork_1.databinding.FragmentDetailsBinding
 import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialContainerTransform
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import java.util.jar.Manifest
 
 class DetailsFragment : Fragment() {
 
@@ -32,6 +51,7 @@ class DetailsFragment : Fragment() {
     private lateinit var coordinatorLay: CoordinatorLayout
     private lateinit var detFabFav: FloatingActionButton
     private lateinit var binding: FragmentDetailsBinding
+    private lateinit var film: Film
     private var favDataBase = mutableListOf<Film>()
         set(value) {
             if (field == value) return
@@ -39,6 +59,7 @@ class DetailsFragment : Fragment() {
         }
 
     private val viewModel: SharedFilmsViewModel by activityViewModels()
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     init {
 
@@ -64,9 +85,13 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.favFilmsLiveData.observe(viewLifecycleOwner, Observer<List<Film>> {
-            favDataBase = it.toMutableList()
-        })
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.favFilmsFlowData.collect {
+                    favDataBase = it.toMutableList()
+                }
+            }
+        }
 
         postponeEnterTransition()
 
@@ -83,7 +108,7 @@ class DetailsFragment : Fragment() {
 
     fun detActivity() {
 
-        val film = arguments?.getParcelable<Film>("film")
+        film = arguments?.getParcelable<Film>("film")!!
         val filmTitle = film?.title
 
         if (film == null) {
@@ -130,5 +155,92 @@ class DetailsFragment : Fragment() {
                 Toast.makeText(requireContext(), "Удалено в Избранное", Toast.LENGTH_SHORT).show()
             }
         }
+
+        binding.detailsFabDownloadWp.setOnClickListener {
+            performAsyncLoadOfPoster()
+        }
+    }
+
+    private fun checkPermission(): Boolean {
+        val result = ContextCompat.checkSelfPermission(
+            requireContext(),
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
+        return  result == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requirePermission() {
+        ActivityCompat.requestPermissions(
+            requireActivity(),
+            arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            1
+        )
+    }
+
+    private fun saveToGallery(bitmap: Bitmap) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.TITLE, film.title.handleSingleQuote())
+                put(MediaStore.Images.Media.DISPLAY_NAME, film.title.handleSingleQuote())
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000)
+                put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis())
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/FilmsSearchApp")
+            }
+
+            val contentResolver = requireActivity().contentResolver
+            val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            val outputStream = contentResolver.openOutputStream(uri!!)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream!!)
+            outputStream.close()
+        }
+        else {
+            @Suppress("DEPRECATION")
+            MediaStore.Images.Media.insertImage(
+                requireActivity().contentResolver,
+                bitmap,
+                film.title.handleSingleQuote(),
+                film.description.handleSingleQuote())
+        }
+    }
+
+    private fun performAsyncLoadOfPoster() {
+        if (!checkPermission()) {
+            requirePermission()
+            return
+        }
+
+        MainScope().launch {
+            binding.detailsProgressBar.isVisible = true
+            try {
+                val deferred = scope.async {
+                    viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film.poster)
+                }
+                saveToGallery(deferred.await())
+                Snackbar.make(binding.root, R.string.downloaded_to_gallery, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.open) {
+                        val intent = Intent()
+                        intent.action = Intent.ACTION_VIEW
+                        intent.type = "image/*"
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                    }.show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+
+                Snackbar.make(
+                    binding.root,
+                    "Error loading image: ${e.message}",
+                    Snackbar.LENGTH_SHORT
+                ).show()
+            } finally {
+                binding.detailsProgressBar.isVisible = false
+            }
+        }
+    }
+
+    private fun String.handleSingleQuote(): String {
+        return this.replace("'", "")
     }
 }

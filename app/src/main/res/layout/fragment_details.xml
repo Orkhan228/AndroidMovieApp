@@ -78,6 +78,30 @@
         app:layout_anchorGravity="start|bottom"
         app:maxImageSize="27dp" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/details_fab_download_wp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:translationX="64dp"
+        android:elevation="4dp"
+        android:src="@drawable/baseline_download_24"
+        app:tint="#FFFFFF"
+        app:backgroundTint="@color/colorPrimary"
+        app:layout_anchor="@id/app_bar_layout"
+        app:layout_anchorGravity="start|bottom"
+        app:maxImageSize="32dp" />
+    
+    <ProgressBar
+        android:id="@+id/details_progress_bar"
+        android:layout_width="43dp"
+        android:layout_height="43dp"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        android:translationZ="10dp"
+        app:layout_anchor="@id/details_fab_download_wp"
+        app:layout_anchorGravity="center" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -97,24 +121,5 @@
             tools:text="@tools:sample/lorem/random" />
 
     </androidx.core.widget.NestedScrollView>
-
-    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
-    <!--        android:id="@+id/constraint_lay"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_gravity="bottom"-->
-    <!--        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior">-->
-
-    <!--        <com.google.android.material.bottomnavigation.BottomNavigationView-->
-    <!--            android:id="@+id/bottom_navigation"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:background="@drawable/bottom_rect"-->
-    <!--            app:itemIconTint="@color/white"-->
-    <!--            app:itemTextColor="@color/white"-->
-    <!--            app:layout_constraintBottom_toBottomOf="@id/constraint_lay"-->
-    <!--            app:menu="@menu/bottom_navigation_menu" />-->
-
-    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

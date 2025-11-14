@@ -33,4 +33,5 @@ class CollectionsFragment : Fragment() {
         rootViewCollect = binding.rootCollections
         AnimationHelper.performFragmentCircularRevealAnimation(rootViewCollect, requireActivity(), 4)
     }
+
 }

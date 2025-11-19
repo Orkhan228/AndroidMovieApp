@@ -2,6 +2,8 @@ package com.example.projectwork_1.data
 
 import com.example.projectwork_1.data.dao.FilmDao
 import com.example.projectwork_1.data.entity.Film
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Flowable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -11,17 +13,9 @@ class MainRepository @Inject constructor(private val filmDao: FilmDao) : AppRepo
 
     override val favoriteFilms = mutableListOf<Film>()
 
-    override suspend fun putToDb(list: List<Film>) {
-        withContext(Dispatchers.IO) {
-            filmDao.insertAllToDb(list)
-        }
-    }
+    override fun putToDb(list: List<Film>): Completable = filmDao.insertAllToDb(list)
 
-    override suspend fun deleteFilmsFromDb() {
-        withContext(Dispatchers.IO) {
-            filmDao.deleteAllFilmsFromDB()
-        }
-    }
+    override fun deleteFilmsFromDb(): Completable = filmDao.deleteAllFilmsFromDB()
 
-    override fun getAllFromDb(): Flow<List<Film>> = filmDao.getCachedFilms()
+    override fun getAllFromDb(): Flowable<List<Film>> = filmDao.getCachedFilms()
 }

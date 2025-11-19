@@ -10,6 +10,12 @@ import com.example.projectwork_1.App
 import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.domain.Interactor
 import com.example.projectwork_1.utils.SingleLiveEvent
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,15 +37,17 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     @Inject
     lateinit var interactor: Interactor
 
+    val compositeDisposable = CompositeDisposable()
+
     //Settings ViewModel
     //создаем наблюдаемый список, который хранит категории
-    val categoryPropertyFlow = MutableStateFlow<String>("")
+    val categoryPropertyFlow = PublishSubject.create<String>()
 
     //создаем наблюдаемый список, который хранит стили темы
-    val themeFlowData = MutableStateFlow<String>("")
+    val themeFlowData = PublishSubject.create<String>()
 
     //создаем livedata для показа progressBar
-    val showProgressBarFlow = MutableStateFlow<Boolean>(false)
+    val showProgressBarFlow = PublishSubject.create<Boolean>()
 
     val showErrorData = SingleLiveEvent<String>()
 
@@ -51,21 +59,23 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     private var lastLoadFailed = false
 
     // Все фильмы
-    val filmsListFlowData: Flow<List<Film>>
+    val filmsListFlowableData: Flowable<List<Film>>
 
     // Избранные фильмы
     private val favFilms = mutableListOf<Film>()
-    val favFilmsFlowData = MutableStateFlow<List<Film>>(emptyList())
+    val favFilmsFlowData = PublishSubject.create<List<Film>>()
 
     init {
         App.instance.dagger.inject(this)
-        filmsListFlowData = interactor.getFilmsFromDb()
+
+        filmsListFlowableData = interactor.getFilmsFromDb()
+
         loadPage(currentPage)
         //вызываем метод, описанный ниже, чтобы положить значение в categoryPropertyLiveData, при создании экземпляра,
         //чтобы при первом запуске, были отмечены кнопки в SettingsFragment
         getCategoryProperty()
         //в этом блоке ставим значение в наш наблюдаемый список, чтобы при первом запуске была уже выбранная тема в радио кнопках
-        themeFlowData.value = interactor.getTheme()
+        themeFlowData.onNext(interactor.getTheme())
     }
 
 
@@ -74,33 +84,33 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         isLoading = true
 
         if (!lastLoadFailed) {
-            showProgressBarFlow.value = true
+            showProgressBarFlow.onNext(true)
         }
 
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                interactor.getFilmsFromApi(page, object : ApiCallBack {
-                    override fun onSuccess() {
+        compositeDisposable.add(
+            interactor.getFilmsFromApi(page)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
                         //сохраняем время последней успешной загрузки
                         interactor.saveUpdateTime(System.currentTimeMillis())
                         currentPage++
                         isLoading = false
                         lastLoadFailed = false
-                        showProgressBarFlow.value = false
-                    }
-                    //в этом методе, когда у нас не работает сеть, выполняется код
-                    override fun onFailure() {
+                        showProgressBarFlow.onNext(false)
+                    },
+                    {
                         //когда, происходит ошибка в сети, выполняется этот метод
-                        showProgressBarFlow.value = false
+                        showProgressBarFlow.onNext(false)
                         if (!lastLoadFailed) {
                             showErrorData.postValue("An error occurred, please check your connection!")
                         }
                         lastLoadFailed = true
                         filmsLogic()
                     }
-                })
-            }
-        }
+                )
+        )
 
     }
 
@@ -134,7 +144,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         if (!favFilms.contains(film)) {
             favFilms.add(film)
             film.isInFavorites = true
-            favFilmsFlowData.value = favFilms
+            favFilmsFlowData.onNext(favFilms)
         }
     }
 
@@ -142,7 +152,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         if (favFilms.contains(film)) {
             favFilms.remove(film)
             film.isInFavorites = false
-            favFilmsFlowData.value = favFilms.toList()
+            favFilmsFlowData.onNext(favFilms.toList())
         }
     }
 
@@ -155,7 +165,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     //Settings ViewModel
     //метод, который изменяет значения нашего наблюдаемого списка
     private fun getCategoryProperty() {
-        categoryPropertyFlow.value = interactor.getDefaultCategoryFromPreferences()
+        categoryPropertyFlow.onNext(interactor.getDefaultCategoryFromPreferences())
     }
 
     //метод, который меняет категорию, после изменения вызывает getCategoryProperty(), который уведомляет подписчиков, а после
@@ -163,19 +173,27 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     //не сломать логику загрузок новых страниц.
 
     fun putCategoryProperty(category: String) {
-        viewModelScope.launch {
-            interactor.saveDefaultCategoryToPreferences(category)
-            getCategoryProperty()
+        interactor.saveDefaultCategoryToPreferences(category)
+        getCategoryProperty()
+        compositeDisposable.add(
             interactor.deleteFilmsFromDB()
-            currentPage = 1
-            loadPage(currentPage)
-        }
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {
+                        currentPage = 1
+                        loadPage(currentPage)
+                    },
+                    { e -> println("!!! Problem with CategoryProperty $e")}
+                )
+        )
+
     }
 
     //метод для изменения темы, также после изменения мы уведомляем наш наблюдаемый список
     fun setTheme(theme: String) {
         interactor.saveTheme(theme)
-        themeFlowData.value = theme
+        themeFlowData.onNext(theme)
     }
 
 
@@ -198,4 +216,8 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
+    }
 }

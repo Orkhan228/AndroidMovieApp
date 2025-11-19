@@ -30,7 +30,12 @@ import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import java.util.Locale
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.getValue
 
 
@@ -50,6 +55,7 @@ class HomeFragment : Fragment() {
             field = value
             adapter.addItems(field)
         }
+    private val compDisposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -73,22 +79,29 @@ class HomeFragment : Fragment() {
             }
         })
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.filmsListFlowData.collect { films ->
-                    filmsDataBase = films.toMutableList()
-                    adapter.addItems(filmsDataBase)
-                }
-            }
-        }
+        compDisposable.add(
+            viewModel.filmsListFlowableData
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { films ->
+                        filmsDataBase = films.toMutableList()
+                        adapter.addItems(filmsDataBase)
+                    },
+                    { e ->
+                        println("!!! HomeFragmentProblem $e")
+                    }
+                ))
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.showProgressBarFlow.collect {
+        compDisposable.add(
+            viewModel.showProgressBarFlow
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
                     binding.progressBar.isVisible = it
-                }
-            }
-        }
+                })
+        )
+
 
         viewModel.showErrorData.observe(viewLifecycleOwner, Observer<String> {
             Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
@@ -188,6 +201,11 @@ class HomeFragment : Fragment() {
     //В этом методе мы очищаем
     private fun refreshHomeFragment() {
         viewModel.filmsLogic()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        compDisposable.clear()
     }
 
     companion object {

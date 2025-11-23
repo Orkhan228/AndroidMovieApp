@@ -35,6 +35,9 @@ import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.transition.MaterialContainerTransform
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -57,12 +60,12 @@ class DetailsFragment : Fragment() {
             if (field == value) return
             field = value
         }
+    private val compDisposable = CompositeDisposable()
 
     private val viewModel: SharedFilmsViewModel by activityViewModels()
     private val scope = CoroutineScope(Dispatchers.IO)
 
     init {
-
         sharedElementEnterTransition = MaterialContainerTransform().apply {
             //это тот вьюгруп, где имеются два фрагмента, через которых и будет проходить анимация с общим элементом
             drawingViewId = R.id.fragment_container
@@ -85,13 +88,14 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.favFilmsFlowData.collect {
-                    favDataBase = it.toMutableList()
-                }
-            }
-        }
+        compDisposable.add(
+            viewModel.favFilmsFlowData
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { favDataBase = it.toMutableList() },
+                    { e -> println("!!! Problem in DetailsFragment $e") })
+        )
 
         postponeEnterTransition()
 
@@ -104,6 +108,11 @@ class DetailsFragment : Fragment() {
 
         detActivity()
         startPostponedEnterTransition()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        compDisposable.clear()
     }
 
     fun detActivity() {

@@ -9,6 +9,8 @@ import com.example.projectwork_1.data.sharedPref.AppPreferenceProvider
 import com.example.projectwork_1.utils.AppTmdbApi
 import com.example.projectwork_1.utils.Converter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import io.reactivex.rxjava3.core.Completable
+import io.reactivex.rxjava3.core.Flowable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -30,17 +32,16 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
         mainRepo.favoriteFilms.remove(film)
     }
 
-    override suspend fun getFilmsFromApi(page: Int, callBack: SharedFilmsViewModel.ApiCallBack) {
+    override fun getFilmsFromApi(page: Int): Completable {
         //в метод getFilms, необходимо добавить категорию, которую мы добавляем методом getDefaultCategoryFromPreferences(),
         //который описан ниже
-        val response = retrofitService.api.getFilms(
+        return retrofitService.api.getFilms(
             getDefaultCategoryFromPreferences(),
             API.KEY,
             "ru-RU",
             page
-        )
-        if (response.isSuccessful) {
-            val list = response.body()?.tmdbFilms?.map {
+        ).flatMapCompletable { response ->
+            val list = response.tmdbFilms.map {
                 Film(
                     title = it.title,
                     poster = it.posterPath,
@@ -49,14 +50,8 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
                     isInFavorites = false
                 )
             }
-            callBack.onSuccess()
-            withContext(Dispatchers.IO) {
-                mainRepo.putToDb(list.orEmpty())
-            }
-            delay(400)
-        } else {
-            callBack.onFailure()
-            delay(400)
+
+            mainRepo.putToDb(list)
         }
     }
 
@@ -77,7 +72,7 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
     override fun getTheme(): String = preference.getTheme()
 
     //методы для работы с базой данных
-    override fun getFilmsFromDb(): Flow<List<Film>> = mainRepo.getAllFromDb()
+    override fun getFilmsFromDb(): Flowable<List<Film>> = mainRepo.getAllFromDb()
 
     override fun saveUpdateTime(time: Long) {
         preference.saveUpdateTime(time)
@@ -85,10 +80,5 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
 
     override fun getLastUpdateTime(): Long = preference.getLastUpdateTime()
 
-    override suspend fun deleteFilmsFromDB() {
-        withContext(Dispatchers.IO) {
-            mainRepo.deleteFilmsFromDb()
-        }
-    }
-
+    override fun deleteFilmsFromDB() = mainRepo.deleteFilmsFromDb()
 }

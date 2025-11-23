@@ -21,6 +21,9 @@ import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import kotlin.getValue
 
@@ -36,6 +39,7 @@ class FavoritesFragment : Fragment() {
             field = value
             adapter.addItems(field)
         }
+    private val compDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,13 +55,16 @@ class FavoritesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.favFilmsFlowData.collect {
-                    favFilmsDataBase = it.toMutableList()
-                }
-            }
-        }
+
+        compDisposable.add(
+            viewModel.favFilmsFlowData
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {favFilmsDataBase = it.toMutableList()},
+                    {e -> println("!!! Problem in FavoritesFragment $e")}
+                )
+        )
 
         rootViewFav = binding.favRoot
 
@@ -77,5 +84,10 @@ class FavoritesFragment : Fragment() {
         favoritesRecycler.addItemDecoration(FilmListItemDecor(8))
 
         AnimationHelper.performFragmentCircularRevealAnimation(rootViewFav, requireActivity(), 2)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        compDisposable.clear()
     }
 }

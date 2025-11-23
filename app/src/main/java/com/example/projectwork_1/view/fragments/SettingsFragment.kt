@@ -18,12 +18,16 @@ import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentSettingsBinding
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
     private lateinit var binding: FragmentSettingsBinding
     private val viewModel: SharedFilmsViewModel by activityViewModels()
     private lateinit var rootView: FrameLayout
+    private val compDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,31 +51,39 @@ class SettingsFragment : Fragment() {
         //подписываемся на наши обозреваемы данные, именно на наш список, который хранит категории, тут viewLifecycleOwner -
         //нужен, чтобы наблюдатель автоматически снимался, когда фрагмент уничтожается, предотвращая утечки памяти и Observer<String> -
         //это лямбда, которая вызывается каждый раз, когда значение categoryPropertyLiveData меняется
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.categoryPropertyFlow.collect {
-                    //Тут мы проверяем, какая категория была добавлена, то кнопку, которая соответствует добавленной категории необходимо выбрать
-                    when (it) {
+
+        compDisposable.add(
+            viewModel.categoryPropertyFlow
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    {when (it) {
                         CATEGORY_POPULAR -> binding.radioPopular.isChecked = true
                         CATEGORY_TOP_RATED -> binding.radioTopRated.isChecked = true
                         CATEGORY_SOON -> binding.radioSoon.isChecked = true
                         CATEGORY_NOW_PLAYING -> binding.radioNowPlaying.isChecked = true
-                    }
-                }
-            }
-        }
+                    }},
+                    {e -> println("!!! Problem in SettingsFragment $e")}
+                )
+        )
 
         //подписываемся на наш наблюдаемый список, и при каждом изменении списка, выполняется код в лямбде
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.themeFlowData.collect { theme ->
-                    when (theme) {
-                        THEME_DARK -> binding.radioDark.isChecked = true
-                        THEME_LIGHT -> binding.radioLight.isChecked = true
-                    }
-                }
-            }
-        }
+        compDisposable.add(
+            viewModel.themeFlowData
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { theme ->
+                        when (theme) {
+                            THEME_DARK -> binding.radioDark.isChecked = true
+                            THEME_LIGHT -> binding.radioLight.isChecked = true
+                        }
+                    },
+                    { e -> println("!!! Problem in SettingsFragment $e") }
+                )
+        )
+
+
 
         //ставим слушатель, на выбор кнопок и в соответствии с этой кнопкой, передаем категорию
         binding.radioGroup.setOnCheckedChangeListener { group, checkedId ->
@@ -98,6 +110,13 @@ class SettingsFragment : Fragment() {
                 }
             }
         }
+
+
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        compDisposable.clear()
     }
 
     companion object {

@@ -88,9 +88,14 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     //Внедрение Room
-    implementation("androidx.room:room-runtime:2.2.6")
-    kapt("androidx.room:room-compiler:2.2.6")
+    implementation("androidx.room:room-runtime:2.3.0")
+    kapt("androidx.room:room-compiler:2.3.0")
 
     //Внедрения для корутин, чтобы работали с Room-ом
-    implementation("androidx.room:room-ktx:2.2.6")
+    implementation("androidx.room:room-ktx:2.3.0")
+
+    //Внедрения для RxJava
+    implementation("androidx.room:room-rxjava3:2.3.0")
+    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+    implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
 }

@@ -11,6 +11,7 @@ import com.example.projectwork_1.utils.Converter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -22,12 +23,14 @@ import javax.inject.Inject
 //передаем в конструктор объект нашего класса PreferenceProvider
 //еще до этого, мы поменяли интерфейс TmdpApi, а именно изменили запрос getFilms, добавили туда @Path category
 class Interactor @Inject constructor(val mainRepo: AppRepository, private val retrofitService: AppTmdbApi, private val preference: AppPreferenceProvider) : AppInteractor {
-    override fun getFavFilmsDB() : List<Film> {
+    override fun getFavFilmsDB(): List<Film> {
         return mainRepo.favoriteFilms
     }
+
     override fun addFavFilmsToDB(film: Film) {
         mainRepo.favoriteFilms.add(film)
     }
+
     override fun removeFavFilmsFromDB(film: Film) {
         mainRepo.favoriteFilms.remove(film)
     }
@@ -81,4 +84,23 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
     override fun getLastUpdateTime(): Long = preference.getLastUpdateTime()
 
     override fun deleteFilmsFromDB() = mainRepo.deleteFilmsFromDb()
+
+
+    override fun searchFilm(query: String, page: Int, includeAdult: Boolean): Single<List<Film>> {
+        return retrofitService.api.searchFilm(query, page, API.KEY, "ru-RU", includeAdult)
+            .map { result ->
+                val list = result.tmdbFilms.map {
+                    Film(
+                        title = it.title,
+                        poster = it.posterPath,
+                        description = it.overview,
+                        rating = it.voteAverage,
+                        isInFavorites = false
+                    )
+                }
+                list
+            }
+        }
+
+
 }

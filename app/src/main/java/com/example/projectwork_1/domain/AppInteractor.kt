@@ -5,6 +5,7 @@ import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.Flow
 
 interface AppInteractor {
@@ -20,4 +21,5 @@ interface AppInteractor {
     fun saveUpdateTime(time: Long)
     fun getLastUpdateTime(): Long
     fun deleteFilmsFromDB(): Completable
+    fun searchFilm(query: String, page: Int, includeAdult: Boolean): Single<List<Film>>
 }

@@ -58,6 +58,13 @@ class FilmListAdapter(private val clickListener: OnItemClickListener) :
         return items.size
     }
 
+    fun addItemsPagination(list: MutableList<Film>) {
+        val start = items.size
+        items.addAll(list)
+        notifyItemRangeInserted(start, list.size)
+    }
+
+
     fun addItems(list: MutableList<Film>) {
         //DiffUtil из дополнительного задания реализован
         val oldData = items

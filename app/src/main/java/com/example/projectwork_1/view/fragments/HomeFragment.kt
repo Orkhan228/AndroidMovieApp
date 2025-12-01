@@ -33,9 +33,11 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 import kotlin.getValue
 
 
@@ -130,7 +132,16 @@ class HomeFragment : Fragment() {
 
                 //делаем логику, того что если осталось пять последних айтемов, то начинаем загрузку
                 if (totalItemCount <= lastVisibleItem + 5) {
-                    viewModel.loadNextPage()
+//                    viewModel.loadNextPage()
+                    compDisposable.add(
+                    viewModel.searchNextFilm()
+                        .subscribe(
+                            {
+                                adapter.addItemsPagination(it as MutableList<Film>)
+                            },
+                            { e -> println("!!! Problem with search ${e.printStackTrace()}") }
+                        )
+                    )
                 }
             }
         })
@@ -151,16 +162,19 @@ class HomeFragment : Fragment() {
                     adapter.addItems(filmsDataBase)
                     return true
                 } else {
-                    val result = filmsDataBase.filter {
-                        it.title.lowercase(Locale.getDefault()).contains(
-                            newText.lowercase(
-                                Locale.getDefault()
-                            )
+                    compDisposable.add(
+                    viewModel.searchFilm()
+                        .subscribe(
+                            {
+                                adapter.addItems(it as MutableList<Film>)
+
+                            },
+                            { e -> println("!!! Problem with search ${e.printStackTrace()}") }
                         )
-                    }
-                    adapter.addItems(result as MutableList<Film>)
+                    )
+                    viewModel.searchSubject.onNext(newText)
+                    return true
                 }
-                return true
             }
         })
         AnimationHelper.performFragmentCircularRevealAnimation(rootView, requireActivity(), 1)

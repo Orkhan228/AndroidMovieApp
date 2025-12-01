@@ -1,5 +1,6 @@
 package com.example.projectwork_1.viewmodel
 
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.lifecycle.LiveData
@@ -12,6 +13,8 @@ import com.example.projectwork_1.domain.Interactor
 import com.example.projectwork_1.utils.SingleLiveEvent
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -24,9 +27,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.http.Query
 import retrofit2.http.Url
 import java.net.URL
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -38,6 +43,8 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     lateinit var interactor: Interactor
 
     val compositeDisposable = CompositeDisposable()
+
+    val searchSubject = PublishSubject.create<String>()
 
     //Settings ViewModel
     //создаем наблюдаемый список, который хранит категории
@@ -55,8 +62,10 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     private var currentTime: Long = 0
     private var currentPage = 1
+    private var searchCurrentPage = 1
     private var isLoading = false
     private var lastLoadFailed = false
+    private var currentQuery = ""
 
     // Все фильмы
     val filmsListFlowableData: Flowable<List<Film>>
@@ -139,6 +148,31 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
             }
         }
     }
+
+
+    fun searchFilm(
+        page: Int = 1,
+        includeAdult: Boolean = false,
+    ): Observable<List<Film>> {
+        return searchSubject
+            .subscribeOn(Schedulers.io())
+            .debounce(350L, TimeUnit.MILLISECONDS)
+            .switchMapSingle { query ->
+                currentQuery = query
+                searchCurrentPage = 1
+                interactor.searchFilm(query.lowercase(), searchCurrentPage, includeAdult)
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    fun searchNextFilm(includeAdult: Boolean = false): Single<List<Film>> {
+        searchCurrentPage++
+        return interactor.searchFilm(currentQuery.lowercase(), searchCurrentPage, includeAdult)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+
+    }
+
 
     fun addToFavorites(film: Film) {
         if (!favFilms.contains(film)) {

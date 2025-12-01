@@ -16,4 +16,14 @@ interface TmdbApi {
         @Query("language") language: String,
         @Query("page") page: Int
     ) : Single<TmdbResultsDTO>
+
+
+    @GET("search/movie")
+    fun searchFilm(
+        @Query("query") query: String,
+        @Query("page") page: Int = 1,
+        @Query("api_key") apiKey: String,
+        @Query("language") language: String,
+        @Query("include_adult") includeAdult: Boolean = false
+    ) : Single<TmdbResultsDTO>
 }

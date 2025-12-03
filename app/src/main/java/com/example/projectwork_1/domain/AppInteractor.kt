@@ -1,12 +1,9 @@
 package com.example.projectwork_1.domain
 
-import androidx.lifecycle.LiveData
-import com.example.projectwork_1.data.entity.Film
-import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import com.example.domain_room_api.entity.Film
 import io.reactivex.rxjava3.core.Completable
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Single
-import kotlinx.coroutines.flow.Flow
 
 interface AppInteractor {
     fun getFavFilmsDB() : List<Film>

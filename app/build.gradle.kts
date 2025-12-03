@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
-    id("kotlin-kapt")
+    kotlin("kapt")
 }
 
 android {
@@ -59,43 +59,29 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.airbnb.android:lottie:6.6.6")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    //Добавляем зависимости retrofit и логгера
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.6.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:3.12.6")
-
-//    //Внедрение Hilt
-////    implementation("com.google.dagger:hilt-android:2.57.1")
-////    kapt("com.google.dagger:hilt-android-compiler:2.57.1")
-//    implementation("androidx.fragment:fragment-ktx:1.6.0") // для by viewModels()
-//    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2") // ViewModel + Kotlin extensions
+    //Добавляем зависимости retrofit и логгера через модуль
+    implementation(project(":domain_retrofit"))
 
     //Внедрение Dagger2
-    implementation("com.google.dagger:dagger:2.52")
-    kapt("com.google.dagger:dagger-compiler:2.52")
+    implementation(libs.dagger)
+    kapt(libs.dagger.compiler)
+
+    //Внедрение Room для RxJava через модуль
+    implementation(project(":domain_room"))
 
     //для activityViewModels
     implementation("androidx.fragment:fragment-ktx:1.6.0")
 
     //Swipe refresh layout dependency
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-
-    //Внедрение Room
-    implementation("androidx.room:room-runtime:2.3.0")
-    kapt("androidx.room:room-compiler:2.3.0")
-
-    //Внедрения для корутин, чтобы работали с Room-ом
-    implementation("androidx.room:room-ktx:2.3.0")
-
+    
     //Внедрения для RxJava
-    implementation("androidx.room:room-rxjava3:2.3.0")
     implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
-    implementation("com.squareup.retrofit2:adapter-rxjava3:2.9.0")
 }

@@ -2,24 +2,28 @@ package com.example.projectwork_1
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.domain_api.retrofit.TmdbApi
+import com.example.domain_room_api.db.FilmDao
 import com.example.projectwork_1.data.di.AppComponent
-import com.example.projectwork_1.data.di.DaggerAppComponent
 import com.example.projectwork_1.data.sharedPref.AppPreferenceProvider
-import com.example.projectwork_1.data.sharedPref.PreferenceProvider
 import javax.inject.Inject
 
 
 class App : Application() {
 
-    lateinit var dagger: AppComponent
     @Inject
     lateinit var preferenceProvider: AppPreferenceProvider
+
+    @Inject
+    lateinit var tmdbApi: TmdbApi
+
+    @Inject
+    lateinit var filmDao: FilmDao
 
     override fun onCreate() {
         super.onCreate()
         instance = this
-        dagger = DaggerAppComponent.builder().appContext(context = this).build()
-        dagger.inject(this)
+        getApp().inject(this)
 
         //этот код нам нужен для того, чтобы загружать последнюю выбранную тему, то есть перед выходом из приложения, допустим
         //что я выбрал темную схему, это сохранилось в sharedPreferences, теперь при следующим запуском приложения, приложение
@@ -34,8 +38,16 @@ class App : Application() {
         }
     }
 
+    fun getApp(): AppComponent {
+        return appComponent ?: AppComponent.init(this).also {
+            appComponent = it
+        }
+    }
+
     companion object {
         lateinit var instance: App
             private set
+
+        private var appComponent: AppComponent? = null
     }
 }

@@ -21,9 +21,9 @@ import androidx.lifecycle.observe
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.databinding.FragmentHomeBinding
-import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter

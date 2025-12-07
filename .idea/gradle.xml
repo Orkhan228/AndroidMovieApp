@@ -11,6 +11,12 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/domain_retrofit" />
+            <option value="$PROJECT_DIR$/domain_retrofit_api" />
+            <option value="$PROJECT_DIR$/domain_retrofit_impl" />
+            <option value="$PROJECT_DIR$/domain_room" />
+            <option value="$PROJECT_DIR$/domain_room_api" />
+            <option value="$PROJECT_DIR$/domain_room_impl" />
           </set>
         </option>
       </GradleProjectSettings>

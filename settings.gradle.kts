@@ -21,4 +21,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "ProjectWork_1"
 include(":app")
- 
+include(":domain_retrofit_api")
+include(":domain_retrofit_impl")
+include(":domain_retrofit")
+include(":domain_room_api")
+include(":domain_room_impl")
+include(":domain_room")

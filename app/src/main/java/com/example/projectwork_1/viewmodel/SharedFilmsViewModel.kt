@@ -1,14 +1,11 @@
 package com.example.projectwork_1.viewmodel
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.App
-import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.domain.Interactor
 import com.example.projectwork_1.utils.SingleLiveEvent
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -16,21 +13,10 @@ import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.http.Query
-import retrofit2.http.Url
 import java.net.URL
-import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -75,10 +61,8 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     val favFilmsFlowData = PublishSubject.create<List<Film>>()
 
     init {
-        App.instance.dagger.inject(this)
-
+        App.instance.getApp().inject(this)
         filmsListFlowableData = interactor.getFilmsFromDb()
-
         loadPage(currentPage)
         //вызываем метод, описанный ниже, чтобы положить значение в categoryPropertyLiveData, при создании экземпляра,
         //чтобы при первом запуске, были отмечены кнопки в SettingsFragment

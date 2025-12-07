@@ -22,15 +22,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
-import com.example.projectwork_1.utils.ApiConstants
+import com.example.domain_room_api.entity.Film
+import com.example.projectwork_1.utils.ApiConstantsApp
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
-import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -43,7 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.util.jar.Manifest
+
 
 class DetailsFragment : Fragment() {
 
@@ -126,7 +122,7 @@ class DetailsFragment : Fragment() {
             detToolBar.title = "Error occurred!"
         } else {
             Glide.with(this)
-                .load(ApiConstants.IMAGES_URL + "w780" + film.poster)
+                .load(ApiConstantsApp.IMAGES_URL + "w780" + film.poster)
                 .centerCrop()
                 .into(detPost)
             detDesc.text = film.description
@@ -224,7 +220,7 @@ class DetailsFragment : Fragment() {
             binding.detailsProgressBar.isVisible = true
             try {
                 val deferred = scope.async {
-                    viewModel.loadWallpaper(ApiConstants.IMAGES_URL + "original" + film.poster)
+                    viewModel.loadWallpaper(ApiConstantsApp.IMAGES_URL + "original" + film.poster)
                 }
                 saveToGallery(deferred.await())
                 Snackbar.make(binding.root, R.string.downloaded_to_gallery, Snackbar.LENGTH_LONG)

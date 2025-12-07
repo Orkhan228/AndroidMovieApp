@@ -1,7 +1,7 @@
 package com.example.projectwork_1.utils
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.projectwork_1.data.entity.Film
+import com.example.domain_room_api.entity.Film
 
 class FilmDiffUtil(val oldList: List<Film>, val newList: List<Film>) :
     DiffUtil.Callback() {

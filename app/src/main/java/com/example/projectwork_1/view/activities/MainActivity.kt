@@ -16,10 +16,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
-import com.example.projectwork_1.utils.API
+import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.ActivityMainBinding
-import com.example.projectwork_1.data.entity.Film
 import com.example.projectwork_1.view.fragments.CollectionsFragment
 import com.example.projectwork_1.view.fragments.DetailsFragment
 import com.example.projectwork_1.view.fragments.FavoritesFragment

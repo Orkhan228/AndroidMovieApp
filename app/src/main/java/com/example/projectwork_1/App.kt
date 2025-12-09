@@ -5,9 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
 import com.example.domain_api.retrofit.TmdbApi
 import com.example.domain_room_api.db.FilmDao
 import com.example.projectwork_1.data.di.AppComponent

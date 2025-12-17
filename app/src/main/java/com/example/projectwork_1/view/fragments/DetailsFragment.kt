@@ -1,7 +1,8 @@
 package com.example.projectwork_1.view.fragments
 
-import android.content.ContentResolver
+import android.app.NotificationManager
 import android.content.ContentValues
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -24,9 +25,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.example.domain_room_api.entity.Film
+import com.example.projectwork_1.App
 import com.example.projectwork_1.utils.ApiConstantsApp
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
+import com.example.projectwork_1.utils.DetailsNotifications
+import com.example.projectwork_1.utils.NotificationConstants
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -49,6 +53,7 @@ class DetailsFragment : Fragment() {
     private lateinit var detFabShare: FloatingActionButton
     private lateinit var coordinatorLay: CoordinatorLayout
     private lateinit var detFabFav: FloatingActionButton
+    private lateinit var detFabNotify: FloatingActionButton
     private lateinit var binding: FragmentDetailsBinding
     private lateinit var film: Film
     private var favDataBase = mutableListOf<Film>()
@@ -60,6 +65,7 @@ class DetailsFragment : Fragment() {
 
     private val viewModel: SharedFilmsViewModel by activityViewModels()
     private val scope = CoroutineScope(Dispatchers.IO)
+    lateinit var notificationManager: NotificationManager
 
     init {
         sharedElementEnterTransition = MaterialContainerTransform().apply {
@@ -94,6 +100,7 @@ class DetailsFragment : Fragment() {
         )
 
         postponeEnterTransition()
+        notificationManager = App.instance.notificationManager
 
         detDesc = binding.detailsDescription
         detPost = binding.detailsPoster
@@ -101,7 +108,7 @@ class DetailsFragment : Fragment() {
         detFabShare = binding.detailsFab
         coordinatorLay = binding.coordinatorLay
         detFabFav = binding.detailsFabFav
-
+        detFabNotify = binding.detailsFabNotify
         detActivity()
         startPostponedEnterTransition()
     }
@@ -163,6 +170,13 @@ class DetailsFragment : Fragment() {
 
         binding.detailsFabDownloadWp.setOnClickListener {
             performAsyncLoadOfPoster()
+        }
+
+        detFabNotify.setOnClickListener {
+            val detNotification = DetailsNotifications(requireContext(), NotificationConstants.CHANNEL_ID, film)
+            val notification = detNotification.notification
+            notificationManager.notify(NotificationConstants.NOTIFICATION_ID, notification.build())
+
         }
     }
 

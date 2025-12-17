@@ -1,5 +1,9 @@
 package com.example.projectwork_1.view.activities
 
+import android.app.ComponentCaller
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
@@ -17,8 +21,10 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import com.example.domain_room_api.entity.Film
+import com.example.projectwork_1.App
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.ActivityMainBinding
+import com.example.projectwork_1.utils.NotificationConstants
 import com.example.projectwork_1.view.fragments.CollectionsFragment
 import com.example.projectwork_1.view.fragments.DetailsFragment
 import com.example.projectwork_1.view.fragments.FavoritesFragment
@@ -31,6 +37,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 private lateinit var mainLayout: ConstraintLayout
 private var lastFragmentTag: String? = null
 private lateinit var bottomNavigationView: BottomNavigationView
+private lateinit var notificationManager: NotificationManager
+private lateinit var notificationChannel: NotificationChannel
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -82,10 +90,21 @@ class MainActivity : AppCompatActivity() {
 
         mainLayout = binding.main
 
+        notificationManager = App.instance.notificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(createNotfChannel())
+        }
+
         initNavigation()
         startFragment()
-
+        handleNotificationIntent(intent)
         binding.titleToolBar = "Search It!"
+
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNotificationIntent(intent)
     }
 
     private fun checkFragmentExistence(tag: String): Fragment? {
@@ -233,5 +252,40 @@ class MainActivity : AppCompatActivity() {
             }
         }
         bottomNavigationView.selectedItemId = R.id.main_menu
+    }
+
+    fun createNotfChannel(): NotificationChannel {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = NotificationChannel(
+                NotificationConstants.CHANNEL_ID,
+                NotificationConstants.CHANNEL_NAME,
+                NotificationConstants.CHANNEL_IMPORTANCE
+            ).apply {
+                description = NotificationConstants.CHANNEL_DESCRIPTION
+            }
+        }
+        return notificationChannel
+    }
+
+    private fun handleNotificationIntent(intent: Intent) {
+        val film = intent.getParcelableExtra<Film>(NotificationConstants.EXTRA_FILM_ID)
+
+        if (film == null) return
+
+        openFilmDetails(film)
+    }
+
+    private fun openFilmDetails(film: Film) {
+        val bundle = Bundle()
+        bundle.putParcelable("film", film)
+
+        val detailsFragment = DetailsFragment()
+        detailsFragment.arguments = bundle
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, detailsFragment)
+            .addToBackStack(null)
+            .commit()
     }
 }

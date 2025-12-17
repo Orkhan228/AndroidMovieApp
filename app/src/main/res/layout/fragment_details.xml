@@ -65,6 +65,21 @@
         app:tint="#FFFFFF" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/details_fab_notify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:translationX="-64dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:elevation="4dp"
+        android:src="@drawable/round_add_alert_24"
+        app:backgroundTint="@color/colorPrimary"
+        app:layout_anchor="@id/app_bar_layout"
+        app:layout_anchorGravity="end|bottom"
+        app:maxImageSize="35dp"
+        app:tint="#FFFFFF" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/details_fab_fav"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

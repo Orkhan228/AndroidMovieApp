@@ -1,6 +1,8 @@
 package com.example.projectwork_1
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,6 +12,7 @@ import com.example.domain_api.retrofit.TmdbApi
 import com.example.domain_room_api.db.FilmDao
 import com.example.projectwork_1.data.di.AppComponent
 import com.example.projectwork_1.data.sharedPref.AppPreferenceProvider
+import com.example.projectwork_1.utils.NotificationConstants
 import javax.inject.Inject
 
 
@@ -26,6 +29,9 @@ class App : Application() {
 
     lateinit var receiver: MyChargerBroadcastReceiver
 
+    lateinit var notificationManager: NotificationManager
+
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -48,13 +54,22 @@ class App : Application() {
         val intentFilter = IntentFilter().apply {
             addAction(Intent.ACTION_POWER_CONNECTED)
             addAction(Intent.ACTION_BATTERY_LOW)
+            addAction(NotificationConstants.ACTION_OPEN)
+            addAction(NotificationConstants.ACTION_DELETE)
         }
 
         //так как класс App живет на протяжении всего приложения, то дерегистрировать receiver не надо
-        this.registerReceiver(
-            receiver,
-            intentFilter
-        )
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                receiver,
+                intentFilter,
+                Context.RECEIVER_NOT_EXPORTED
+            )
+        } else {
+            registerReceiver(receiver, intentFilter)
+        }
+
+        notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
 
     fun getApp(): AppComponent {

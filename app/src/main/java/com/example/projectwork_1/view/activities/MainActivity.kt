@@ -1,13 +1,12 @@
 package com.example.projectwork_1.view.activities
 
-import android.app.ComponentCaller
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -31,7 +30,12 @@ import com.example.projectwork_1.view.fragments.FavoritesFragment
 import com.example.projectwork_1.view.fragments.HomeFragment
 import com.example.projectwork_1.view.fragments.SettingsFragment
 import com.example.projectwork_1.view.fragments.WatchLaterFragment
+import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlin.getValue
+import androidx.activity.viewModels
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 
 private lateinit var mainLayout: ConstraintLayout
@@ -39,9 +43,15 @@ private var lastFragmentTag: String? = null
 private lateinit var bottomNavigationView: BottomNavigationView
 private lateinit var notificationManager: NotificationManager
 private lateinit var notificationChannel: NotificationChannel
+private lateinit var compositeDisposable: CompositeDisposable
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    private val viewModel: SharedFilmsViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //Проверяем текущую версию API смартфона, если больше или равно 30, то говорим системе не настраивать отступы,
         //мы сами их сделаем
@@ -90,10 +100,12 @@ class MainActivity : AppCompatActivity() {
 
         mainLayout = binding.main
 
+
         notificationManager = App.instance.notificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(createNotfChannel())
         }
+        compositeDisposable = CompositeDisposable()
 
         initNavigation()
         startFragment()
@@ -268,11 +280,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleNotificationIntent(intent: Intent) {
-        val film = intent.getParcelableExtra<Film>(NotificationConstants.EXTRA_FILM_ID)
+        val filmID = intent.getIntExtra(NotificationConstants.EXTRA_FILM_ID, -1)
+        if (filmID == -1) return
 
-        if (film == null) return
+        compositeDisposable.add(
+            viewModel.filmsListFlowableData
+            .filter { it.isNotEmpty() }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { films ->
+                    films.find { it.id == filmID }?.let { film -> openFilmDetails(film) }
+                },
+                { e ->
+                    Log.e("MainActivity", "Notification handling error", e)
+                })
+        )
 
-        openFilmDetails(film)
     }
 
     private fun openFilmDetails(film: Film) {

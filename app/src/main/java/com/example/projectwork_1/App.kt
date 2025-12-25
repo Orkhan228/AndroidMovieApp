@@ -1,6 +1,7 @@
 package com.example.projectwork_1
 
 import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.Application
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
@@ -30,6 +31,8 @@ class App : Application() {
     lateinit var receiver: MyChargerBroadcastReceiver
 
     lateinit var notificationManager: NotificationManager
+
+    lateinit var alarmManager: AlarmManager
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate() {
@@ -70,6 +73,7 @@ class App : Application() {
         }
 
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
     }
 
     fun getApp(): AppComponent {

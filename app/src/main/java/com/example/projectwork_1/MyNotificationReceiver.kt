@@ -5,23 +5,38 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import com.example.domain_room_api.entity.Film
+import com.example.projectwork_1.utils.DetailsNotifications
 import com.example.projectwork_1.utils.NotificationConstants
 import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.view.fragments.DetailsFragment
 
 class MyNotificationReceiver : BroadcastReceiver() {
 
+
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
+        val filmId = intent.getIntExtra(NotificationConstants.EXTRA_FILM_ID, -1)
+        val filmTitle = intent.getStringExtra(NotificationConstants.EXTRA_FILM_TITLE) ?: "фильм"
+
+        val notification = DetailsNotifications(context, NotificationConstants.CHANNEL_ID, filmTitle, filmId).notification
+
         when(intent.action) {
+
+            NotificationConstants.ALARM_NOTIFICATION_ACTION -> {
+                notificationManager.notify(
+                    filmId,
+                    notification.build()
+                )
+            }
+
             NotificationConstants.ACTION_OPEN -> {
-                val film =  intent.getParcelableExtra<Film>(NotificationConstants.EXTRA_FILM_ID)!!
                 val intent1 = Intent(context, MainActivity::class.java).apply {
-                    putExtra(NotificationConstants.EXTRA_FILM_ID, film)
+                    putExtra(NotificationConstants.EXTRA_FILM_ID, filmId)
                 }
                 intent1.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent1)
@@ -30,6 +45,7 @@ class MyNotificationReceiver : BroadcastReceiver() {
             NotificationConstants.ACTION_DELETE -> {
                 notificationManager.cancelAll()
             }
+
         }
     }
 }

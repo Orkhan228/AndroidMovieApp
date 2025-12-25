@@ -2,18 +2,24 @@ package com.example.projectwork_1.viewmodel
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.DiffUtil
 import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.App
 import com.example.projectwork_1.domain.Interactor
+import com.example.projectwork_1.entity.WatchLaterNotification
 import com.example.projectwork_1.utils.SingleLiveEvent
+import com.example.projectwork_1.utils.WatchLaterFilmDiffUtil
+import com.example.projectwork_1.view.rv_adapters.WatchLaterFilmsAdapter
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
+import io.reactivex.rxjava3.subjects.BehaviorSubject
 import io.reactivex.rxjava3.subjects.PublishSubject
 import kotlinx.coroutines.launch
 import java.net.URL
@@ -58,7 +64,11 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     // Избранные фильмы
     private val favFilms = mutableListOf<Film>()
-    val favFilmsFlowData = PublishSubject.create<List<Film>>()
+    val favFilmsFlowData = BehaviorSubject.create<List<Film>>()
+
+    // Фильмы добавленные в Смотреть позже
+    private var watchLaterFilms = mutableListOf<WatchLaterNotification>()
+    val watchLaterFilmsFlowData = BehaviorSubject.create<List<WatchLaterNotification>>()
 
     init {
         App.instance.getApp().inject(this)
@@ -82,7 +92,7 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
         compositeDisposable.add(
             interactor.getFilmsFromApi(page)
-                .subscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     {
@@ -173,6 +183,42 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
             favFilmsFlowData.onNext(favFilms.toList())
         }
     }
+
+    fun addToWatchLater(film: Film, triggerTime: Long) {
+        if (!watchLaterFilms.any {it.film.id == film.id}) {
+            watchLaterFilms.add(
+                WatchLaterNotification(
+                    film,
+                    triggerTime,
+                    film.id
+                )
+            )
+            film.isInWatchLater = true
+
+            watchLaterFilmsFlowData.onNext(watchLaterFilms.toList())
+        }
+    }
+
+    fun removeFromWatchLater(filmId: Int) {
+        watchLaterFilms.find { it.film.id == filmId }?.film?.isInWatchLater = false
+        watchLaterFilms.removeAll { it.film.id == filmId }
+
+        watchLaterFilmsFlowData.onNext(watchLaterFilms)
+    }
+
+    fun updateWatchLater(updated: WatchLaterNotification) {
+        val index = watchLaterFilms.indexOfFirst {
+            it.film.id == updated.film.id
+        }
+        if (index == -1) return
+
+        watchLaterFilms[index] = updated
+        watchLaterFilmsFlowData.onNext(watchLaterFilms.toList())
+    }
+
+
+
+
 
     //интерфейс для метода getFilmsFromApi() из интерактора, там мы передаем список фильмов, а тут мы пишем реализацию этого интерфейса
     interface ApiCallBack {

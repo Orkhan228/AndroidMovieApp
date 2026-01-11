@@ -2,10 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root_watch_later"
     android:layout_height="match_parent"
     tools:context=".view.fragments.WatchLaterFragment"
     android:visibility="invisible"
     tools:visibility="visible"
     android:background="@drawable/fon_for_watch_laters">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/watch_later_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 </FrameLayout>

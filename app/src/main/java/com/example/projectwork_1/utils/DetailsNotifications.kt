@@ -10,13 +10,13 @@ import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.MyNotificationReceiver
 import com.example.projectwork_1.R
 
-class DetailsNotifications(val context: Context, channelID: String?, film: Film) {
+class DetailsNotifications(val context: Context, channelID: String?, filmTitle: String, val filmId: Int) {
 
     private val intentOpen = Intent(context, MyNotificationReceiver::class.java).apply {
         action = NotificationConstants.ACTION_OPEN
-        putExtra(NotificationConstants.EXTRA_FILM_ID, film)
+        putExtra(NotificationConstants.EXTRA_FILM_ID, filmId)
     }
-    private val pendingIntentOpen = PendingIntent.getBroadcast(context, film.id, intentOpen,
+    private val pendingIntentOpen = PendingIntent.getBroadcast(context, filmId, intentOpen,
         PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     private val actionOpen = Notification.Action.Builder(
         null,
@@ -27,7 +27,7 @@ class DetailsNotifications(val context: Context, channelID: String?, film: Film)
     private val intentDelete = Intent(context, MyNotificationReceiver::class.java).apply {
         action = NotificationConstants.ACTION_DELETE
     }
-    private val pendingIntentDelete = PendingIntent.getBroadcast(context, 1, intentDelete,
+    private val pendingIntentDelete = PendingIntent.getBroadcast(context, filmId, intentDelete,
         PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     private val actionDelete = Notification.Action.Builder(
         null,
@@ -36,11 +36,11 @@ class DetailsNotifications(val context: Context, channelID: String?, film: Film)
     ).build()
 
 
-     val notification =
+    val notification =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(context, channelID)
                 .setContentTitle("Эй! Глянь этот фильм на досуге:")
-                .setContentText(film.title)
+                .setContentText(filmTitle)
                 .setSmallIcon(Icon.createWithResource(context, R.drawable.ic_notification_film))
                 .setShowWhen(true)
                 .addAction(actionOpen)
@@ -50,7 +50,7 @@ class DetailsNotifications(val context: Context, channelID: String?, film: Film)
         } else {
             Notification.Builder(context)
                 .setContentTitle("Эй! Глянь этот фильм на досуге:")
-                .setContentText(film.title)
+                .setContentText(filmTitle)
                 .setSmallIcon(Icon.createWithResource(context, R.drawable.ic_notification_film))
                 .setShowWhen(true)
                 .addAction(actionOpen)

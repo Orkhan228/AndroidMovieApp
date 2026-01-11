@@ -9,6 +9,7 @@ import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.databinding.FilmItemBinding
 import com.example.projectwork_1.utils.FilmDiffUtil
 import com.example.projectwork_1.view.rv_viewholders.FilmViewHolder
+import com.example.projectwork_1.view.rv_viewholders.WatchLaterFilmsViewHolder
 
 class FilmListAdapter(private val clickListener: OnItemClickListener) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -78,4 +79,5 @@ class FilmListAdapter(private val clickListener: OnItemClickListener) :
     interface OnItemClickListener {
         fun click(film: Film, posterView: ImageView)
     }
+
 }

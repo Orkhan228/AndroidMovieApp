@@ -55,6 +55,14 @@ class FavoritesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val favoritesRecycler = binding.favoritesRecyclerView
+
+        adapter =
+            FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
+                override fun click(film: Film, posterView: ImageView) {
+                    (requireActivity() as MainActivity).launchDetFragment(film, posterView)
+                }
+            })
 
         compDisposable.add(
             viewModel.favFilmsFlowData
@@ -66,23 +74,14 @@ class FavoritesFragment : Fragment() {
                 )
         )
 
-        rootViewFav = binding.favRoot
-
-        val favoritesRecycler = binding.favoritesRecyclerView
-
-        adapter =
-            FilmListAdapter(object : FilmListAdapter.OnItemClickListener {
-                override fun click(film: Film, posterView: ImageView) {
-                    (requireActivity() as MainActivity).launchDetFragment(film, posterView)
-                }
-            })
-
         adapter.addItems(favFilmsDataBase)
 
         favoritesRecycler.adapter = adapter
         favoritesRecycler.layoutManager = LinearLayoutManager(requireContext())
         favoritesRecycler.addItemDecoration(FilmListItemDecor(8))
 
+
+        rootViewFav = binding.favRoot
         AnimationHelper.performFragmentCircularRevealAnimation(rootViewFav, requireActivity(), 2)
     }
 

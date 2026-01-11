@@ -1,15 +1,20 @@
 package com.example.projectwork_1.view.fragments
 
+import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ContentValues
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.icu.util.Calendar
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,14 +31,18 @@ import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.App
+import com.example.projectwork_1.MyNotificationReceiver
 import com.example.projectwork_1.utils.ApiConstantsApp
 import com.example.projectwork_1.R
 import com.example.projectwork_1.databinding.FragmentDetailsBinding
 import com.example.projectwork_1.utils.DetailsNotifications
 import com.example.projectwork_1.utils.NotificationConstants
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat.CLOCK_24H
 import com.google.android.material.transition.MaterialContainerTransform
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
@@ -66,6 +75,7 @@ class DetailsFragment : Fragment() {
     private val viewModel: SharedFilmsViewModel by activityViewModels()
     private val scope = CoroutineScope(Dispatchers.IO)
     lateinit var notificationManager: NotificationManager
+    private lateinit var alarmManager: AlarmManager
 
     init {
         sharedElementEnterTransition = MaterialContainerTransform().apply {
@@ -100,7 +110,9 @@ class DetailsFragment : Fragment() {
         )
 
         postponeEnterTransition()
+
         notificationManager = App.instance.notificationManager
+        alarmManager = App.instance.alarmManager
 
         detDesc = binding.detailsDescription
         detPost = binding.detailsPoster
@@ -109,6 +121,7 @@ class DetailsFragment : Fragment() {
         coordinatorLay = binding.coordinatorLay
         detFabFav = binding.detailsFabFav
         detFabNotify = binding.detailsFabNotify
+
         detActivity()
         startPostponedEnterTransition()
     }
@@ -173,10 +186,67 @@ class DetailsFragment : Fragment() {
         }
 
         detFabNotify.setOnClickListener {
-            val detNotification = DetailsNotifications(requireContext(), NotificationConstants.CHANNEL_ID, film)
-            val notification = detNotification.notification
-            notificationManager.notify(NotificationConstants.NOTIFICATION_ID, notification.build())
 
+            val intentBroadcast = Intent(requireContext(), MyNotificationReceiver::class.java)
+            intentBroadcast.action = NotificationConstants.ALARM_NOTIFICATION_ACTION
+
+
+            val datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Выберите дату:")
+                .build()
+
+            datePicker.show(parentFragmentManager, "DATE_PICKER")
+
+            datePicker.addOnPositiveButtonClickListener { dateMillis ->
+                val timePicker = MaterialTimePicker.Builder()
+                    .setTimeFormat(CLOCK_24H)
+                    .setHour(12)
+                    .setMinute(0)
+                    .setTitleText("Выберите время")
+                    .build()
+
+                timePicker.show(parentFragmentManager, "TIME_PICKER")
+
+                timePicker.addOnPositiveButtonClickListener {
+                    val calendar = Calendar.getInstance()
+                    calendar.timeInMillis = dateMillis
+                    calendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
+                    calendar.set(Calendar.MINUTE, timePicker.minute)
+                    calendar.set(Calendar.SECOND, 0)
+
+                    val triggerTime = calendar.timeInMillis
+
+                    if (!film.isInWatchLater) {
+
+                        viewModel.addToWatchLater(film, triggerTime)
+
+                        intentBroadcast.putExtra(NotificationConstants.EXTRA_FILM_ID, film.id)
+                        intentBroadcast.putExtra(NotificationConstants.EXTRA_FILM_TITLE, film.title)
+
+                        val pendingIntentAlarmBroadcast = PendingIntent.getBroadcast(
+                            requireContext(),
+                            film.id,
+                            intentBroadcast,
+                            PendingIntent.FLAG_UPDATE_CURRENT,
+                        )
+
+                        alarmManager.set(
+                            AlarmManager.RTC_WAKEUP,
+                            triggerTime,
+                            pendingIntentAlarmBroadcast
+                        )
+
+                        Toast.makeText(requireContext(), "Напоминание установлено",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        Toast.makeText(requireContext(), "Вы уже установили напоминание на этот фильм",
+                            Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+
+            }
         }
     }
 

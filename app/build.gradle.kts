@@ -76,12 +76,17 @@ dependencies {
     //Внедрение Room для RxJava через модуль
     implementation(project(":domain_room"))
 
-    //для activityViewModels
+    //для activityViewModels и viewModels()
     implementation("androidx.fragment:fragment-ktx:1.6.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
+
 
     //Swipe refresh layout dependency
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     
     //Внедрения для RxJava
     implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+
+
+
 }

@@ -23,6 +23,8 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             CachedFilmsDatabase::class.java,
-            "cached_films_db").build()
+            "cached_films_db")
+            .fallbackToDestructiveMigration()
+            .build()
     }
 }

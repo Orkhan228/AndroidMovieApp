@@ -5,5 +5,5 @@ import androidx.room.RoomDatabase
 import com.example.domain_room_api.db.DatabaseContract
 import com.example.domain_room_api.entity.Film
 
-@Database(entities = [Film::class], version = 1, exportSchema = true)
+@Database(entities = [Film::class], version = 2, exportSchema = true)
 abstract class CachedFilmsDatabase : RoomDatabase(), DatabaseContract

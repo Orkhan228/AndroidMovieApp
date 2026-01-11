@@ -6,10 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * LiveData, которая отправляет обновления только один раз (Single Event)
- * Используется для событий вроде навигации, Toast и т.д.
- */
+
 class SingleLiveEvent<T> : MutableLiveData<T>() {
 
     private val pending = AtomicBoolean(false)

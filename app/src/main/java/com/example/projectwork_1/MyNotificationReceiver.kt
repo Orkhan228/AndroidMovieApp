@@ -5,13 +5,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
-import android.os.Build
-import android.os.Bundle
-import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.utils.DetailsNotifications
 import com.example.projectwork_1.utils.NotificationConstants
 import com.example.projectwork_1.view.activities.MainActivity
-import com.example.projectwork_1.view.fragments.DetailsFragment
 
 class MyNotificationReceiver : BroadcastReceiver() {
 

@@ -2,7 +2,9 @@ package com.example.projectwork_1.view.activities
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +38,7 @@ import kotlin.getValue
 import androidx.activity.viewModels
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import androidx.core.content.edit
 
 
 private lateinit var mainLayout: ConstraintLayout
@@ -49,6 +52,8 @@ private lateinit var compositeDisposable: CompositeDisposable
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+
+    private var trialExpired = false
 
     private val viewModel: SharedFilmsViewModel by viewModels()
 
@@ -105,13 +110,30 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationManager.createNotificationChannel(createNotfChannel())
         }
+
         compositeDisposable = CompositeDisposable()
+
+        if (isTrialExpired(this)) {
+            trialExpired = true
+            showTrialExpiredDialog(this)
+
+        }
+        else {
+            trialExpired = false
+            showTrialDialog(this)
+        }
 
         initNavigation()
         startFragment()
         handleNotificationIntent(intent)
         binding.titleToolBar = "Search It!"
 
+        val prefs = getSharedPreferences(SHARED_PREF_TRIAL_NAME, MODE_PRIVATE)
+        if (!prefs.contains(SHARED_PREF_FIRST_LAUNCH)) {
+            prefs.edit {
+                putLong("firstLaunch", System.currentTimeMillis())
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -219,26 +241,30 @@ class MainActivity : AppCompatActivity() {
 
             when (it.itemId) {
                 R.id.favorites -> {
-                    val tag = "favorites"
-                    val fragment = checkFragmentExistence(tag)
-                    changeFragment(fragment ?: FavoritesFragment(), tag)
+                    //так как версия беслпатная, то выводим тост об этом и не открываем этот экран.
+                    Toast.makeText(this@MainActivity, "Данный экран не доступен, из-за бесплатной версии!", Toast.LENGTH_SHORT).show()
 
 
                     true
                 }
 
                 R.id.watch_later -> {
-                    val tag = "watchLater"
-                    val fragment = checkFragmentExistence(tag)
-                    changeFragment(fragment ?: WatchLaterFragment(), tag)
+                    if (trialExpired) {
+                        Toast.makeText(this@MainActivity, "Пробный период истёк. Данный экран больше недоступен!", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        val tag = "watchLater"
+                        val fragment = checkFragmentExistence(tag)
+                        changeFragment(fragment ?: WatchLaterFragment(), tag)
+                    }
+
 
                     true
                 }
 
                 R.id.collections -> {
-                    val tag = "collections"
-                    val fragment = checkFragmentExistence(tag)
-                    changeFragment(fragment ?: CollectionsFragment(), tag)
+                    //так как версия беслпатная, то выводим тост об этом и не открываем этот экран.
+                    Toast.makeText(this@MainActivity, "Данный экран не доступен, из-за бесплатной версии!", Toast.LENGTH_SHORT).show()
 
 
                     true
@@ -285,17 +311,34 @@ class MainActivity : AppCompatActivity() {
 
         compositeDisposable.add(
             viewModel.filmsListFlowableData
-            .filter { it.isNotEmpty() }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { films ->
-                    films.find { it.id == filmID }?.let { film -> openFilmDetails(film) }
-                },
-                { e ->
-                    Log.e("MainActivity", "Notification handling error", e)
-                })
+                .filter { it.isNotEmpty() }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { films ->
+                        films.find { it.id == filmID }?.let { film -> openFilmDetails(film) }
+                    },
+                    { e ->
+                        Log.e("MainActivity", "Notification handling error", e)
+                    })
         )
 
+    }
+
+    private fun isTrialExpired(context: Context): Boolean {
+        val prefs = context.getSharedPreferences(SHARED_PREF_TRIAL_NAME, Context.MODE_PRIVATE)
+        val firstStart = prefs.getLong(SHARED_PREF_FIRST_LAUNCH, 0L)
+
+        val trialDays = 7L
+        val trialDaysInMs = trialDays * 24 * 60 * 60 * 1000
+
+        val result = System.currentTimeMillis() - firstStart > trialDaysInMs
+
+        val prefsBoolean = context.getSharedPreferences(SHARED_PREF_IS_TRIAL_EXPIRED_NAME, Context.MODE_PRIVATE)
+        prefsBoolean.edit {
+            putBoolean(SHARED_PREF_IS_TRIAL_EXPIRED, result)
+        }
+
+        return result
     }
 
     private fun openFilmDetails(film: Film) {
@@ -310,5 +353,28 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, detailsFragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun showTrialDialog(context: Context) {
+        AlertDialog.Builder(context)
+            .setTitle("Пробная версия")
+            .setMessage("У вас активен пробный период на 7 дней. После его окончания некоторые функции(такие как, \"Посмотреть позже\") будут заблокированы.")
+            .setPositiveButton("Ок", null)
+            .show()
+    }
+
+    private fun showTrialExpiredDialog(context: Context) {
+        AlertDialog.Builder(context)
+            .setTitle("Пробная версия окончилась")
+            .setMessage("У вас больше не активен пробный период на 7 дней. Такие функции как, \"Посмотреть позже\"  заблокированы.")
+            .setPositiveButton("Ок", null)
+            .show()
+    }
+
+    companion object {
+        const val SHARED_PREF_TRIAL_NAME = "trial"
+        const val SHARED_PREF_FIRST_LAUNCH = "firstLaunch"
+        const val SHARED_PREF_IS_TRIAL_EXPIRED = "SHARED_PREF_IS_TRIAL_EXPIRED"
+        const val SHARED_PREF_IS_TRIAL_EXPIRED_NAME = "SHARED_PREF_IS_TRIAL_EXPIRED_NAME"
     }
 }

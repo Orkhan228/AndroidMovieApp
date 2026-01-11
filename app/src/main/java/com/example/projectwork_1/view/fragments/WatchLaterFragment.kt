@@ -22,7 +22,6 @@ import com.example.projectwork_1.entity.WatchLaterNotification
 import com.example.projectwork_1.utils.AnimationHelper
 import com.example.projectwork_1.utils.NotificationConstants
 import com.example.projectwork_1.view.activities.MainActivity
-import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.WatchLaterFilmsAdapter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel

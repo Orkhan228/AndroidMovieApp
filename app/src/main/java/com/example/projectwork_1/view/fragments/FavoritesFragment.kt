@@ -8,23 +8,17 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.domain_room_api.entity.Film
-import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.databinding.FragmentFavoritesBinding
 import com.example.projectwork_1.utils.AnimationHelper
+import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.launch
 import kotlin.getValue
 
 class FavoritesFragment : Fragment() {

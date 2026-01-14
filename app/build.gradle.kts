@@ -26,6 +26,22 @@ android {
         }
     }
 
+    flavorDimensions += "version"
+
+    productFlavors {
+        create("free") {
+            dimension = "version"
+            applicationIdSuffix = ".free"
+            versionNameSuffix = "-free"
+        }
+
+        create("paid") {
+            dimension = "version"
+            applicationIdSuffix = ".paid"
+            versionNameSuffix = "-paid"
+        }
+    }
+
     buildFeatures {
         viewBinding = true
         dataBinding = true

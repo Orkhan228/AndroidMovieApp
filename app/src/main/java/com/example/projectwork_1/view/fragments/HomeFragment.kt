@@ -13,31 +13,19 @@ import androidx.appcompat.widget.SearchView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.domain_room_api.entity.Film
-import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.databinding.FragmentHomeBinding
 import com.example.projectwork_1.utils.AnimationHelper
+import com.example.projectwork_1.view.activities.MainActivity
 import com.example.projectwork_1.view.rv_adapters.FilmListItemDecor
 import com.example.projectwork_1.view.rv_adapters.FilmListAdapter
-import java.util.Locale
 import com.example.projectwork_1.viewmodel.SharedFilmsViewModel
-import com.google.android.material.snackbar.Snackbar
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import io.reactivex.rxjava3.subjects.PublishSubject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.concurrent.TimeUnit
 import kotlin.getValue
 
 

@@ -1,9 +1,11 @@
 package com.example.projectwork_1.view.fragments
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ContentValues
+import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.transition.Transition
 import com.bumptech.glide.Glide
 import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.App
@@ -122,6 +125,9 @@ class DetailsFragment : Fragment() {
         detFabFav = binding.detailsFabFav
         detFabNotify = binding.detailsFabNotify
 
+        val pref = requireContext().getSharedPreferences(SHARED_PREF_IS_TRIAL_EXPIRED_NAME, Context.MODE_PRIVATE)
+        val isExpired = pref.getBoolean(SHARED_PREF_IS_TRIAL_EXPIRED, false)
+
         detActivity()
         startPostponedEnterTransition()
     }
@@ -166,94 +172,21 @@ class DetailsFragment : Fragment() {
             else R.drawable.baseline_favorite_border_24
         )
 
-        detFabFav.setOnClickListener {
-
-            if (!film.isInFavorites) {
-                film.isInFavorites = true
-                viewModel.addToFavorites(film)
-                detFabFav.setImageResource(R.drawable.baseline_favorite_24)
-                Toast.makeText(requireContext(), "Добавлено в Избранное", Toast.LENGTH_SHORT).show()
-            } else {
-                film.isInFavorites = false
-                viewModel.removeFromFavorites(film)
-                detFabFav.setImageResource(R.drawable.baseline_favorite_border_24)
-                Toast.makeText(requireContext(), "Удалено в Избранное", Toast.LENGTH_SHORT).show()
-            }
-        }
+        detFabFav.isEnabled = false
+        detFabFav.isVisible = true
 
         binding.detailsFabDownloadWp.setOnClickListener {
             performAsyncLoadOfPoster()
         }
 
-        detFabNotify.setOnClickListener {
-
-            val intentBroadcast = Intent(requireContext(), MyNotificationReceiver::class.java)
-            intentBroadcast.action = NotificationConstants.ALARM_NOTIFICATION_ACTION
-
-
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Выберите дату:")
-                .build()
-
-            datePicker.show(parentFragmentManager, "DATE_PICKER")
-
-            datePicker.addOnPositiveButtonClickListener { dateMillis ->
-                val timePicker = MaterialTimePicker.Builder()
-                    .setTimeFormat(CLOCK_24H)
-                    .setHour(12)
-                    .setMinute(0)
-                    .setTitleText("Выберите время")
-                    .build()
-
-                timePicker.show(parentFragmentManager, "TIME_PICKER")
-
-                timePicker.addOnPositiveButtonClickListener {
-                    val calendar = Calendar.getInstance()
-                    calendar.timeInMillis = dateMillis
-                    calendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
-                    calendar.set(Calendar.MINUTE, timePicker.minute)
-                    calendar.set(Calendar.SECOND, 0)
-
-                    val triggerTime = calendar.timeInMillis
-
-                    if (!film.isInWatchLater) {
-
-                        viewModel.addToWatchLater(film, triggerTime)
-
-                        intentBroadcast.putExtra(NotificationConstants.EXTRA_FILM_ID, film.id)
-                        intentBroadcast.putExtra(NotificationConstants.EXTRA_FILM_TITLE, film.title)
-
-                        val pendingIntentAlarmBroadcast = PendingIntent.getBroadcast(
-                            requireContext(),
-                            film.id,
-                            intentBroadcast,
-                            PendingIntent.FLAG_UPDATE_CURRENT,
-                        )
-
-                        alarmManager.set(
-                            AlarmManager.RTC_WAKEUP,
-                            triggerTime,
-                            pendingIntentAlarmBroadcast
-                        )
-
-                        Toast.makeText(requireContext(), "Напоминание установлено",
-                            Toast.LENGTH_SHORT).show()
-                    }
-                    else {
-                        Toast.makeText(requireContext(), "Вы уже установили напоминание на этот фильм",
-                            Toast.LENGTH_SHORT).show()
-                    }
-
-                }
-
-            }
-        }
+        detFabNotify.isEnabled = false
+        detFabNotify.isVisible = true
     }
 
     private fun checkPermission(): Boolean {
         val result = ContextCompat.checkSelfPermission(
             requireContext(),
-            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
         return  result == PackageManager.PERMISSION_GRANTED
     }
@@ -261,7 +194,7 @@ class DetailsFragment : Fragment() {
     private fun requirePermission() {
         ActivityCompat.requestPermissions(
             requireActivity(),
-            arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
             1
         )
     }
@@ -331,5 +264,10 @@ class DetailsFragment : Fragment() {
 
     private fun String.handleSingleQuote(): String {
         return this.replace("'", "")
+    }
+
+    companion object {
+        const val SHARED_PREF_IS_TRIAL_EXPIRED = "SHARED_PREF_IS_TRIAL_EXPIRED"
+        const val SHARED_PREF_IS_TRIAL_EXPIRED_NAME = "SHARED_PREF_IS_TRIAL_EXPIRED_NAME"
     }
 }

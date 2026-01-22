@@ -1,5 +1,6 @@
 package com.example.projectwork_1.domain
 
+import android.util.Log
 import com.example.domain_api.retrofit.TmdbApi
 import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.data.AppRepository
@@ -43,7 +44,7 @@ class Interactor @Inject constructor(val mainRepo: AppRepository, private val re
                     isInFavorites = false
                 )
             }
-
+            Log.d("poster_path", list[0].poster)
             mainRepo.putToDb(list)
         }
     }

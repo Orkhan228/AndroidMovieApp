@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
     kotlin("kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -75,6 +76,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.firebase.config)
     kapt("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.airbnb.android:lottie:6.6.6")
@@ -103,6 +105,7 @@ dependencies {
     //Внедрения для RxJava
     implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
 
-
-
+    //Внедрение для Firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }

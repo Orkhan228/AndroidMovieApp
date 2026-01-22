@@ -1,5 +1,6 @@
 package com.example.projectwork_1.view.activities
 
+import android.app.Dialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -9,6 +10,8 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -39,6 +42,10 @@ import androidx.activity.viewModels
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 
 private lateinit var mainLayout: ConstraintLayout
@@ -56,6 +63,9 @@ class MainActivity : AppCompatActivity() {
     private var trialExpired = false
 
     private val viewModel: SharedFilmsViewModel by viewModels()
+
+    private val mFirebaseRemoteConfig = App.instance.mFirebaseRemoteConfig
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //Проверяем текущую версию API смартфона, если больше или равно 30, то говорим системе не настраивать отступы,
@@ -134,6 +144,13 @@ class MainActivity : AppCompatActivity() {
                 putLong("firstLaunch", System.currentTimeMillis())
             }
         }
+
+        //логика показа диалога с постером
+        viewModel.fetchRemoteConfig(mFirebaseRemoteConfig)
+        viewModel.isShownDialogPoster.observe(this) {
+            showPosterDialog(it)
+        }
+
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -243,8 +260,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.favorites -> {
                     //так как версия беслпатная, то выводим тост об этом и не открываем этот экран.
                     Toast.makeText(this@MainActivity, "Данный экран не доступен, из-за бесплатной версии!", Toast.LENGTH_SHORT).show()
-
-
                     true
                 }
 
@@ -341,6 +356,7 @@ class MainActivity : AppCompatActivity() {
         return result
     }
 
+    //метод открытия фрагмента с деталями, с диалога невозможно сделать sharedElement, согласно архитектуре Андроида
     private fun openFilmDetails(film: Film) {
         val bundle = Bundle()
         bundle.putParcelable("film", film)
@@ -371,10 +387,61 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+
+    //создаем диалог со своей версткой
+    private fun showPosterDialog(posterPath: String) {
+
+        val dialog = Dialog(this)
+        //убирает надпись(заголовок) dialog
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_poster)
+        //диалог отменяется при тапе вне него
+        dialog.setCancelable(true)
+
+        val posterImageView = dialog.findViewById<ImageView>(R.id.dialog_poster_iv)
+        val closeButton = dialog.findViewById<Button>(R.id.dialog_poster_btn)
+
+        //загружаем картинку через Glide
+        Glide.with(this)
+            .load(posterPath)
+            .into(posterImageView)
+
+        //обрабатываем клик на ImageView
+        posterImageView.setOnClickListener {
+            compositeDisposable.add(
+                //Весь список фильмов
+                viewModel.filmsListFlowableData
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    //подписываемся на этот Flow
+                    .subscribe { films ->
+                        //так как через апи я получил только путь постера, сделал вот такую логику через endsWith
+                        val film = films.find { posterPath.endsWith(it.poster) }
+                        if (film != null) {
+                            openFilmDetails(film)
+                            dialog.dismiss()
+                        }
+
+                        else {
+                            Toast.makeText(this, "Фильм не найден", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+            )
+        }
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
     companion object {
         const val SHARED_PREF_TRIAL_NAME = "trial"
         const val SHARED_PREF_FIRST_LAUNCH = "firstLaunch"
         const val SHARED_PREF_IS_TRIAL_EXPIRED = "SHARED_PREF_IS_TRIAL_EXPIRED"
         const val SHARED_PREF_IS_TRIAL_EXPIRED_NAME = "SHARED_PREF_IS_TRIAL_EXPIRED_NAME"
     }
+
 }

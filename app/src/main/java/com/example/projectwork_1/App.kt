@@ -14,6 +14,8 @@ import com.example.domain_room_api.db.FilmDao
 import com.example.projectwork_1.data.di.AppComponent
 import com.example.projectwork_1.data.sharedPref.AppPreferenceProvider
 import com.example.projectwork_1.utils.NotificationConstants
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import javax.inject.Inject
 
 
@@ -33,6 +35,8 @@ class App : Application() {
     lateinit var notificationManager: NotificationManager
 
     lateinit var alarmManager: AlarmManager
+
+    lateinit var mFirebaseRemoteConfig: FirebaseRemoteConfig
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onCreate() {
@@ -74,6 +78,9 @@ class App : Application() {
 
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+        val firebaseRemoteConfigSettings = FirebaseRemoteConfigSettings.Builder().build()
+        mFirebaseRemoteConfig.setConfigSettingsAsync(firebaseRemoteConfigSettings)
     }
 
     fun getApp(): AppComponent {

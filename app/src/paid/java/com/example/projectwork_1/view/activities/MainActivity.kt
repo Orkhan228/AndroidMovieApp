@@ -108,6 +108,12 @@ class MainActivity : AppCompatActivity() {
         handleNotificationIntent(intent)
         binding.titleToolBar = "Search It!"
 
+        //логика показа диалога с постером
+        viewModel.fetchRemoteConfig(mFirebaseRemoteConfig)
+        viewModel.isShownDialogPoster.observe(this) {
+            showPosterDialog(it)
+        }
+
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -293,7 +299,7 @@ class MainActivity : AppCompatActivity() {
         )
 
     }
-
+    //метод открытия фрагмента с деталями, с диалога невозможно сделать sharedElement, согласно архитектуре Андроида
     private fun openFilmDetails(film: Film) {
         val bundle = Bundle()
         bundle.putParcelable("film", film)
@@ -306,5 +312,55 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragment_container, detailsFragment)
             .addToBackStack(null)
             .commit()
+    }
+
+
+    //создаем диалог со своей версткой
+    private fun showPosterDialog(posterPath: String) {
+
+        val dialog = Dialog(this)
+        //убирает надпись(заголовок) dialog
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_poster)
+        //диалог отменяется при тапе вне него
+        dialog.setCancelable(true)
+
+        val posterImageView = dialog.findViewById<ImageView>(R.id.dialog_poster_iv)
+        val closeButton = dialog.findViewById<Button>(R.id.dialog_poster_btn)
+
+        //загружаем картинку через Glide
+        Glide.with(this)
+            .load(posterPath)
+            .into(posterImageView)
+
+        //обрабатываем клик на ImageView
+        posterImageView.setOnClickListener {
+            compositeDisposable.add(
+                //Весь список фильмов
+                viewModel.filmsListFlowableData
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    //подписываемся на этот Flow
+                    .subscribe { films ->
+                        //так как через апи я получил только путь постера, сделал вот такую логику через endsWith
+                        val film = films.find { posterPath.endsWith(it.poster) }
+                        if (film != null) {
+                            openFilmDetails(film)
+                            dialog.dismiss()
+                        }
+
+                        else {
+                            Toast.makeText(this, "Фильм не найден", Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+            )
+        }
+
+        closeButton.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 }

@@ -16,6 +16,7 @@ gsonConverter = "2.6.0"
 okhttpLogging = "3.12.6"
 dagger = "2.52"
 rxAdapter = "2.9.0"
+firebaseConfig = "23.0.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +39,7 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-rxjava3 = { module = "androidx.room:room-rxjava3", version.ref = "room" }
+firebase-config = { group = "com.google.firebase", name = "firebase-config", version.ref = "firebaseConfig" }
 
 
 

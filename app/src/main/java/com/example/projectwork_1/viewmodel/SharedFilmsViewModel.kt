@@ -1,18 +1,26 @@
 package com.example.projectwork_1.viewmodel
 
+import android.app.Dialog
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import android.view.Window
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DiffUtil
+import com.bumptech.glide.Glide
 import com.example.domain_room_api.entity.Film
 import com.example.projectwork_1.App
+import com.example.projectwork_1.R
 import com.example.projectwork_1.domain.Interactor
 import com.example.projectwork_1.entity.WatchLaterNotification
 import com.example.projectwork_1.utils.SingleLiveEvent
-import com.example.projectwork_1.utils.WatchLaterFilmDiffUtil
 import com.example.projectwork_1.view.rv_adapters.WatchLaterFilmsAdapter
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
@@ -38,6 +46,9 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     val searchSubject = PublishSubject.create<String>()
 
+    //флаг для того, чтобы знать запускается ли приложение
+    private var posterDialogWasShown = false
+
     //Settings ViewModel
     //создаем наблюдаемый список, который хранит категории
     val categoryPropertyFlow = PublishSubject.create<String>()
@@ -47,6 +58,9 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
 
     //создаем livedata для показа progressBar
     val showProgressBarFlow = PublishSubject.create<Boolean>()
+
+    //создаем singleLiveEvent, чтобы событие показывалось один раз за жизнь приложения
+    val isShownDialogPoster = SingleLiveEvent<String>()
 
     val showErrorData = SingleLiveEvent<String>()
 
@@ -116,8 +130,6 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
         )
 
     }
-
-    fun loadNextPage() = loadPage(currentPage)
 
     //метод новый логики загрузки фильмов из бд
     fun filmsLogic() {
@@ -217,6 +229,22 @@ class SharedFilmsViewModel @Inject constructor() : ViewModel() {
     }
 
 
+    fun fetchRemoteConfig(mFirebaseRemoteConfig: FirebaseRemoteConfig) {
+        if (posterDialogWasShown) return
+
+        var posterPath: String = ""
+
+        mFirebaseRemoteConfig.fetch(0)
+            .addOnSuccessListener {
+                mFirebaseRemoteConfig.activate()
+                posterPath = mFirebaseRemoteConfig.getString("movie_link")
+
+                if (posterPath.isNotBlank()) {
+                    posterDialogWasShown = true
+                    isShownDialogPoster.postValue(posterPath)
+                }
+            }
+    }
 
 
 
